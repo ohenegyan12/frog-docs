@@ -1156,10 +1156,276 @@ curl_close($ch);
         },
         'Send General': {
             title: 'Send Generalized Messages',
-            body: (
+            body: (() => {
+                const samples = [
+                    {
+                        lang: 'cURL',
+                        code: `curl -X POST 'https://frogapi.wigal.com.gh/api/v3/sms/send' \\
+-H "API-KEY: your_api_key_here" \\
+-H "USERNAME: your_username_here" \\
+-d '{
+    "senderid": "Lomo Inc",
+    "destinations": [
+        {
+            "destination": "0222222222",
+            "msgid": "MGS1010101"
+        }
+    ],
+    "message": "This is a sample message for SMS sending via FrogAPI.",
+    "smstype": "text"
+}'`
+                    },
+                    {
+                        lang: 'JavaScript',
+                        code: `const apiKey = 'your_api_key_here'; // Replace with your API Key
+const username = 'your_username_here'; // Replace with your Username
+const postData = {
+    "senderid": "Lomo Inc",
+    "destinations": [{
+        "destination": "0222222222",
+        "msgid": "MGS1010101"
+    }],
+    "message": "This is a sample message for SMS sending via FrogAPI.",
+    "smstype": "text"
+};
+
+fetch('https://frogapi.wigal.com.gh/api/v3/sms/send', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        'API-KEY': apiKey,
+        'USERNAME': username
+    },
+    body: JSON.stringify(postData)
+})
+.then(response => response.json())
+.then(data => {
+    console.log(data);
+})
+.catch(error => {
+    console.error('Error:', error);
+});`
+                    },
+                    {
+                        lang: 'Python',
+                        code: `import requests
+import json
+
+api_key = 'your_api_key_here' # Replace with your API Key
+username = 'your_username_here' # Replace with your Username
+post_data = {
+    'senderid': 'Lomo Inc',
+    'destinations': [{
+        'destination': '0222222222',
+        'msgid': 'MGS1010101'
+    }],
+    'message': 'This is a sample message for SMS sending via FrogAPI.',
+    'smstype': 'text'
+}
+
+headers = {
+    'Content-Type': 'application/json',
+    'API-KEY': api_key,
+    'USERNAME': username
+}
+
+response = requests.post('https://frogapi.wigal.com.gh/api/v3/sms/send', headers=headers, data=json.dumps(post_data))
+
+print(response.json())`
+                    },
+                    {
+                        lang: 'PHP',
+                        code: `<?php
+$apiKey = 'your_api_key_here'; // Replace with your API Key
+$username = 'your_username_here'; // Replace with your Username
+$postData = [
+    'senderid' => 'Lomo Inc',
+    'destinations' => [[
+        'destination' => '0222222222',
+        'msgid' => 'MGS1010101'
+    ]],
+    'message' => 'This is a sample message for SMS sending via FrogAPI.',
+    'smstype' => 'text'
+];
+
+$ch = curl_init('https://frogapi.wigal.com.gh/api/v3/sms/send');
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_POST, true);
+curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+    'Content-Type: application/json',
+    'API-KEY: ' . $apiKey,
+    'USERNAME: ' . $username
+));
+curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($postData));
+
+$response = curl_exec($ch);
+if(curl_errno($ch)) {
+    echo 'Error:' . curl_error($ch);
+} else {
+    echo $response;
+}
+curl_close($ch);
+?>`
+                    }
+                ];
+
+                const requestObjectSample = [
+                    {
+                        lang: 'JSON',
+                        code: `{
+    "senderid": "Lomo Inc",
+    "destinations": [
+        {
+            "destination": "0222222222",
+            "msgid": "MGS1010101"
+        }
+    ],
+    "message": "This is a sample message for SMS sending via FrogAPI.",
+    "smstype": "text"
+}`
+                    }
+                ];
+
+                const responseSample = [
+                    {
+                        lang: '200',
+                        code: `{
+    "status": "ACCEPTD",
+    "message": "Message Accepted For Processing"
+}`
+                    },
+                    {
+                        lang: '400',
+                        code: `{
+    "status": "INVALID_REQUEST",
+    "message": "Invalid request parameters",
+    "errors": [
+        "Sender ID is required",
+        "Message length exceeds maximum limit",
+        "Invalid destination number format"
+    ]
+}`
+                    },
+                    {
+                        lang: '401',
+                        code: `{
+    "status": "UNAUTHORIZED",
+    "message": "Authentication failed"
+}`
+                    },
+                    {
+                        lang: '403',
+                        code: `{
+    "status": "FORBIDDEN",
+    "message": "Insufficient permissions"
+}`
+                    },
+                    {
+                        lang: '404',
+                        code: `{
+    "status": "SENDER_ID_NOT_FOUND",
+    "message": "Sender ID not found or not approved"
+}`
+                    },
+                    {
+                        lang: '500',
+                        code: `{
+    "status": "ERROR",
+    "message": "Internal server error"
+}`
+                    }
+                ];
+
+                return {
+                    main: (
+                        <>
+                            <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: 1.6 }}>
+                                Send Generalized Messages.
+                            </p>
+                            <EndpointBox method="POST" url="https://frogapi.wigal.com.gh/api/v3/sms/send" theme={theme} />
+
+                            <h2 style={{ fontSize: '1.75rem', marginBottom: '1rem', marginTop: '4rem', fontWeight: 700 }}>Request Object</h2>
+                            <ResponseTable data={[
+                                { field: 'senderid', type: 'string', description: 'The senderID used for sending message. Approved SenderIDs only' },
+                                { field: 'destination', type: 'string', description: 'Recipient Phone Number.' },
+                                { field: 'msgid', type: 'string', description: 'Your message ID.' },
+                                { field: 'message', type: 'string', description: 'The message to be sent.' },
+                                { field: 'smstype', type: 'string', description: 'The type of message to be sent. Default is text.' }
+                            ]} />
+
+                            <h2 style={{ fontSize: '1.75rem', marginBottom: '1rem', marginTop: '4rem', fontWeight: 700 }}>Response Object</h2>
+                            <ResponseTable data={[
+                                { field: 'status', type: 'string', description: 'The status of the request.' },
+                                { field: 'message', type: 'string', description: 'The message response.' }
+                            ]} />
+
+                            <h2 style={{ fontSize: '1.75rem', marginBottom: '1rem', marginTop: '4rem', fontWeight: 700 }}>Responses</h2>
+
+                            <ResponseAccordion code="200" status="ACCEPTED">
+                                <ResponseTable data={[
+                                    { field: 'status', type: 'string', description: 'Returns "ACCEPTD" when message is successfully queued' },
+                                    { field: 'message', type: 'string', description: 'Returns "Message Accepted For Processing" on success' }
+                                ]} />
+                            </ResponseAccordion>
+
+                            <ResponseAccordion code="400" status="BAD REQUEST" type="error">
+                                <ResponseTable data={[
+                                    { field: 'status', type: 'string', description: 'Error status code ("INVALID_REQUEST")' },
+                                    { field: 'message', type: 'string', description: 'Detailed error message explaining the issue' }
+                                ]} />
+                            </ResponseAccordion>
+
+                            <ResponseAccordion code="401" status="UNAUTHORIZED" type="error">
+                                <ResponseTable data={[
+                                    { field: 'status', type: 'string', description: 'Error status code ("UNAUTHORIZED")' },
+                                    { field: 'message', type: 'string', description: 'Message Response' }
+                                ]} />
+                            </ResponseAccordion>
+
+                            <ResponseAccordion code="403" status="FORBIDDEN" type="error">
+                                <ResponseTable data={[
+                                    { field: 'status', type: 'string', description: 'Error status code ("FORBIDDEN")' },
+                                    { field: 'message', type: 'string', description: 'Message Response' }
+                                ]} />
+                            </ResponseAccordion>
+
+                            <ResponseAccordion code="404" status="NOT FOUND" type="error">
+                                <ResponseTable data={[
+                                    { field: 'status', type: 'string', description: 'Error status code (e.g., "SENDER_ID_NOT_FOUND")' },
+                                    { field: 'message', type: 'string', description: 'Detailed error message explaining the issue' },
+                                    { field: 'data', type: 'null', description: 'No data returned for error responses' }
+                                ]} />
+                            </ResponseAccordion>
+
+                            <ResponseAccordion code="500" status="SERVER ERROR" type="error">
+                                <ResponseTable data={[
+                                    { field: 'status', type: 'string', description: 'Returns "ERROR" for server errors' },
+                                    { field: 'message', type: 'string', description: 'Generic error message "Internal server error"' }
+                                ]} />
+                            </ResponseAccordion>
+                        </>
+                    ),
+                    right: (
+                        <>
+                            <h2 style={{ fontSize: '1rem', marginBottom: '1rem', color: 'var(--text-primary)', fontWeight: 700 }}>Endpoint</h2>
+                            <CodeExample samples={samples} theme={theme} />
+
+                            <h2 style={{ fontSize: '1rem', marginBottom: '1rem', marginTop: '3rem', color: 'var(--text-primary)', fontWeight: 700 }}>Request Object</h2>
+                            <CodeExample samples={requestObjectSample} theme={theme} />
+
+                            <h2 style={{ fontSize: '1rem', marginBottom: '1rem', marginTop: '3rem', color: 'var(--text-primary)', fontWeight: 700 }}>Response Object</h2>
+                            <CodeExample samples={responseSample} theme={theme} />
+                        </>
+                    )
+                };
+            })()
+        },
+        'Send Personalized': {
+            title: 'Send Personalized Messages',
+            main: (
                 <>
                     <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: 1.6 }}>
-                        Send Generalized Messages.
+                        Send Personalized Messages.
                     </p>
                     <EndpointBox method="POST" url="https://frogapi.wigal.com.gh/api/v3/sms/send" theme={theme} />
 
@@ -1178,14 +1444,6 @@ curl_close($ch);
                         { field: 'message', type: 'string', description: 'The message response.' }
                     ]} />
                 </>
-            )
-        },
-        'Send Personalized': {
-            title: 'Send Personalized SMS',
-            body: (
-                <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: 1.6 }}>
-                    Learn how to send personalized messages to your recipients.
-                </p>
             )
         },
         'Generate OTP': {
