@@ -274,6 +274,9 @@ const TipBox = ({ children, theme }) => {
     );
 };
 
+const SEND_VOICE_KEY = 'Send Voice';
+const SEND_VOICE_INTERACTIVE_KEY = 'Send voice interactive';
+
 function App() {
     const [activeTab, setActiveTab] = useState('Introduction');
     const [activeSidebarItem, setActiveSidebarItem] = useState('Starting with frog');
@@ -308,7 +311,7 @@ function App() {
             },
             {
                 title: 'Voice',
-                items: ['Send Voice', 'Send voice interactive', 'Voice Generate OTP', 'Voice Verify OTP']
+                items: [SEND_VOICE_KEY, SEND_VOICE_INTERACTIVE_KEY, 'Voice Generate OTP', 'Voice Verify OTP']
             }
         ],
         'Smart USSD': [
@@ -2153,9 +2156,7 @@ curl_close($ch);
                 };
             })()
         },
-        'Send Voice': {
-            title: 'Send Voice',
-            body: (() => {
+        [SEND_VOICE_KEY]: (() => {
                 const samples = [
                     {
                         lang: 'cURL',
@@ -2334,6 +2335,7 @@ curl_close($ch);
                 ];
 
                 return {
+                    title: SEND_VOICE_KEY,
                     main: (
                         <>
                             <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: 1.6 }}>
@@ -2415,9 +2417,8 @@ curl_close($ch);
                         </>
                     )
                 };
-            })()
-        },
-        'Send voice interactive': (() => {
+            })(),
+        [SEND_VOICE_INTERACTIVE_KEY]: (() => {
             const samples = [
                 {
                     lang: 'curl',
@@ -2588,7 +2589,7 @@ curl_close($ch);
             ];
 
             return {
-                title: 'Send voice interactive',
+                title: SEND_VOICE_INTERACTIVE_KEY,
                 main: (
                     <>
                         <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: 1.6 }}>
@@ -2991,9 +2992,459 @@ curl_close($ch);
                 )
             };
         })()
+    ,
+        'Voice Generate OTP': {
+            title: 'Voice OTP Generation',
+            body: (
+                <>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: 1.6 }}>
+                        Generate Voice OTP for phone verification.
+                    </p>
+                    <EndpointBox method="POST" url="https://frogapi.wigal.com.gh/api/v3/voice/otp/generate" theme={theme} />
+                    <h2 style={{ fontSize: '1.75rem', marginBottom: '1rem', marginTop: '4rem', fontWeight: 700 }}>Request Object</h2>
+                    <ResponseTable data={[
+                        { field: 'number', type: 'string', description: "The recipient's phone number." },
+                        { field: 'expiry', type: 'integer', description: 'The time duration before the OTP expires (in minutes).' },
+                        { field: 'length', type: 'integer', description: 'The length of the OTP code.' },
+                        { field: 'messagetemplate', type: 'string', description: 'The message template with placeholders.' },
+                        { field: 'type', type: 'string', description: 'Type of OTP (NUMERIC/ALPHA/ALPHANUMERIC).' },
+                        { field: 'callerid', type: 'string', description: 'Caller ID for the voice call (optional). If null, a generic phone number will be used. You can also purchase a dedicated callerid.' },
+                        { field: 'ttsvoicename', type: 'string', description: 'Text-to-Speech voice name (optional). Available options: Male: "Charon", "Fenrir", "Orus", "Puck". Female: "Achernar", "Aoede", "Erinome", "Gacrux", "Kore", "Leda", "Sulafat", "Zephyr".' }
+                    ]} />
+                    <h2 style={{ fontSize: '1.75rem', marginBottom: '1rem', marginTop: '4rem', fontWeight: 700 }}>Placeholders</h2>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: 1.6, marginBottom: '1rem' }}>
+                        Available placeholders for the message template:
+                    </p>
+                    <ResponseTable showType={false} data={[
+                        { field: '%EXPIRY%', type: '', description: 'Expiry time in minutes' },
+                        { field: '%OTPCODE%', type: '', description: 'Generated OTP code' },
+                        { field: '%SERVICE%', type: '', description: 'Service/Application name' },
+                        { field: '%LENGTH%', type: '', description: 'OTP code length' },
+                        { field: '%TYPE%', type: '', description: 'OTP code type' }
+                    ]} />
+
+                    <h2 style={{ fontSize: '1.75rem', marginBottom: '1rem', marginTop: '4rem', fontWeight: 700 }}>Responses</h2>
+
+                    <ResponseAccordion code="200" status="OK">
+                        <ResponseTable data={[
+                            { field: 'status', type: 'string', description: 'Returns "SUCCESS" when OTP is generated' },
+                            { field: 'message', type: 'string', description: 'Confirmation message' }
+                        ]} />
+                    </ResponseAccordion>
+
+                    <ResponseAccordion code="402" status="ERROR" type="error">
+                        <ResponseTable data={[
+                            { field: 'status', type: 'string', description: 'Error status ("ERROR")' },
+                            { field: 'message', type: 'string', description: 'Error description ("Insufficient Balance")' }
+                        ]} />
+                    </ResponseAccordion>
+
+                    <ResponseAccordion code="404" status="ERROR" type="error">
+                        <ResponseTable data={[
+                            { field: 'status', type: 'string', description: 'Error status code' },
+                            { field: 'message', type: 'string', description: 'Error description' }
+                        ]} />
+                    </ResponseAccordion>
+
+                    <ResponseAccordion code="422" status="ERROR" type="error">
+                        <ResponseTable data={[
+                            { field: 'status', type: 'string', description: 'Error status code ("ERROR")' },
+                            { field: 'message', type: 'string', description: 'Error description ("Message template must contain %OTPCODE% placeholder")' }
+                        ]} />
+                    </ResponseAccordion>
+
+                    <ResponseAccordion code="500" status="ERROR" type="error">
+                        <ResponseTable data={[
+                            { field: 'status', type: 'string', description: 'Server error status' },
+                            { field: 'message', type: 'string', description: 'Internal server error message' }
+                        ]} />
+                    </ResponseAccordion>
+                </>
+            ),
+            right: (() => {
+                const samples = [
+                    {
+                        lang: 'cURL',
+                        code: `curl -X POST 'https://frogapi.wigal.com.gh/api/v3/voice/otp/generate' \\
+-H "API-KEY: your_api_key_here" \\
+-H "USERNAME: your_username_here" \\
+-d '{"your_request_body_here"}'`
+                    },
+                    {
+                        lang: 'JavaScript',
+                        code: `const apiKey = 'your_api_key_here'; // Replace with your API Key
+const username = 'your_username_here'; // Replace with your Username
+
+const postData = {
+    number: "0541234567",
+    expiry: 15,
+    length: 5,
+    messagetemplate: "Hello, your OTP is : %OTPCODE%. It will expire after %EXPIRY% mins. The code again: %OTPCODE%, for the last time: %OTPCODE%",
+    type: "NUMERIC",
+    callerid: null,
+    ttsvoicename: null
+};
+
+fetch('https://frogapi.wigal.com.gh/api/v3/voice/otp/generate', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        'API-KEY': apiKey,
+        'USERNAME': username
+    },
+    body: JSON.stringify(postData)
+})
+.then(response => response.json())
+.then(data => {
+    console.log(data);
+})
+.catch(error => {
+    console.error('Error:', error);
+});`
+                    },
+                    {
+                        lang: 'Python',
+                        code: `import requests
+import json
+
+api_key = 'your_api_key_here' # Replace with your API Key
+username = 'your_username_here' # Replace with your Username
+
+post_data = {
+    "number": "0541234567",
+    "expiry": 15,
+    "length": 5,
+    "messagetemplate": "Hello, your OTP is : %OTPCODE%. It will expire after %EXPIRY% mins. The code again: %OTPCODE%, for the last time: %OTPCODE%",
+    "type": "NUMERIC",
+    "callerid": None,
+    "ttsvoicename": None
+}
+
+headers = {
+    'Content-Type': 'application/json',
+    'API-KEY': api_key,
+    'USERNAME': username
+}
+
+response = requests.post('https://frogapi.wigal.com.gh/api/v3/voice/otp/generate', headers=headers, data=json.dumps(post_data))
+
+print(response.json())`
+                    },
+                    {
+                        lang: 'PHP',
+                        code: `<?php
+$apiKey = 'your_api_key_here'; // Replace with your API Key
+$username = 'your_username_here'; // Replace with your Username
+
+$postData = array(
+    'number' => '0541234567',
+    'expiry' => 15,
+    'length' => 5,
+    'messagetemplate' => 'Hello, your OTP is : %OTPCODE%. It will expire after %EXPIRY% mins. The code again: %OTPCODE%, for the last time: %OTPCODE%',
+    'type' => 'NUMERIC',
+    'callerid' => null,
+    'ttsvoicename' => null
+);
+
+$ch = curl_init('https://frogapi.wigal.com.gh/api/v3/voice/otp/generate');
+
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_POST, true);
+curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+    'Content-Type: application/json',
+    'API-KEY: ' . $apiKey,
+    'USERNAME: ' . $username
+));
+
+curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($postData));
+
+$response = curl_exec($ch);
+
+if (curl_errno($ch)) {
+    echo 'Error:' . curl_error($ch);
+} else {
+    echo $response;
+}
+
+curl_close($ch);
+
+?>`
+                    }
+                ];
+                const requestObjectSample = [
+                    {
+                        lang: 'JSON',
+                        code: `{
+  "number": "0541234567",
+  "expiry": 15,
+  "length": 5,
+  "messagetemplate": "Hello, your OTP is : %OTPCODE%. It will expire after %EXPIRY% mins. The code again: %OTPCODE%, for the last time: %OTPCODE%",
+  "type": "NUMERIC",
+  "callerid": null,
+  "ttsvoicename": null
+}`
+                    }
+                ];
+                const responseSample = [
+                    {
+                        lang: '202',
+                        code: `{
+  "status": "SUCCESS",
+  "message": "Voice OTP processed for delivery"
+}`
+                    },
+                    {
+                        lang: '402',
+                        code: `{
+  "status": "ERROR",
+  "message": "Insufficient balance to process request"
+}`
+                    },
+                    {
+                        lang: '404',
+                        code: `{
+  "status": "ERROR",
+  "message": "Invalid phone number format"
+}`
+                    },
+                    {
+                        lang: '422',
+                        code: `{
+  "status": "ERROR",
+  "message": "Message template must contain %OTPCODE% placeholder"
+}`
+                    },
+                    {
+                        lang: '500',
+                        code: `{
+  "status": "ERROR",
+  "message": "Internal server error"
+}`
+                    }
+                ];
+                return (
+                    <>
+                        <h2 style={{ fontSize: '1rem', marginBottom: '1rem', color: 'var(--text-primary)', fontWeight: 700 }}>Endpoint</h2>
+                        <CodeExample samples={samples} theme={theme} />
+                        <h2 style={{ fontSize: '1rem', marginBottom: '1rem', marginTop: '3rem', color: 'var(--text-primary)', fontWeight: 700 }}>Request Object</h2>
+                        <CodeExample samples={requestObjectSample} theme={theme} />
+                        <h2 style={{ fontSize: '1rem', marginBottom: '1rem', marginTop: '3rem', color: 'var(--text-primary)', fontWeight: 700 }}>Response Object</h2>
+                        <CodeExample samples={responseSample} theme={theme} />
+                    </>
+                );
+            })()
+        },
+        'Voice Verify OTP': {
+            title: 'Voice OTP Verification',
+            body: (
+                <>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: 1.6 }}>
+                        Verify Voice OTP code.
+                    </p>
+                    <EndpointBox method="POST" url="https://frogapi.wigal.com.gh/api/v3/voice/otp/verify" theme={theme} />
+                    <h2 style={{ fontSize: '1.75rem', marginBottom: '1rem', marginTop: '4rem', fontWeight: 700 }}>Request Object</h2>
+                    <ResponseTable data={[
+                        { field: 'otpcode', type: 'string', description: 'The OTP code to be verified.' },
+                        { field: 'number', type: 'string', description: "The recipient's phone number." }
+                    ]} />
+                    <h2 style={{ fontSize: '1.75rem', marginBottom: '1rem', marginTop: '4rem', fontWeight: 700 }}>Response Object</h2>
+                    <ResponseTable data={[
+                        { field: 'status', type: 'string', description: 'The status of the request.' },
+                        { field: 'message', type: 'string', description: 'The message response.' }
+                    ]} />
+
+                    <h2 style={{ fontSize: '1.75rem', marginBottom: '1rem', marginTop: '4rem', fontWeight: 700 }}>Responses</h2>
+
+                    <ResponseAccordion code="200" status="OK">
+                        <ResponseTable data={[
+                            { field: 'status', type: 'string', description: 'Verification success status' },
+                            { field: 'message', type: 'string', description: 'Confirmation message' }
+                        ]} />
+                    </ResponseAccordion>
+
+                    <ResponseAccordion code="400" status="ERROR" type="error">
+                        <ResponseTable data={[
+                            { field: 'status', type: 'string', description: 'Status Message ("ERROR")' },
+                            { field: 'message', type: 'string', description: 'Error description ("Missing required fields")' }
+                        ]} />
+                    </ResponseAccordion>
+
+                    <ResponseAccordion code="404" status="ERROR" type="error">
+                        <ResponseTable data={[
+                            { field: 'status', type: 'string', description: 'Verification error status' },
+                            { field: 'message', type: 'string', description: 'Error description' }
+                        ]} />
+                    </ResponseAccordion>
+
+                    <ResponseAccordion code="408" status="ERROR" type="error">
+                        <ResponseTable data={[
+                            { field: 'status', type: 'string', description: 'Status Message ("ERROR")' },
+                            { field: 'message', type: 'string', description: 'Error description ("OTP code has expired")' }
+                        ]} />
+                    </ResponseAccordion>
+
+                    <ResponseAccordion code="500" status="ERROR" type="error">
+                        <ResponseTable data={[
+                            { field: 'status', type: 'string', description: 'Server error status' },
+                            { field: 'message', type: 'string', description: 'Internal server error message' }
+                        ]} />
+                    </ResponseAccordion>
+                </>
+            ),
+            right: (() => {
+                const samples = [
+                    {
+                        lang: 'cURL',
+                        code: `curl -X POST 'https://frogapi.wigal.com.gh/api/v3/voice/otp/verify' \\
+-H "API-KEY: your_api_key_here" \\
+-H "USERNAME: your_username_here" \\
+-d '{request_body_here}'`
+                    },
+                    {
+                        lang: 'JavaScript',
+                        code: `const apiKey = 'your_api_key_here'; // Replace with your API Key
+const username = 'your_username_here'; // Replace with your Username
+
+const postData = {
+    otpcode: '62750',
+    number: '0541234567'
+};
+
+fetch('https://frogapi.wigal.com.gh/api/v3/voice/otp/verify', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        'API-KEY': apiKey,
+        'USERNAME': username
+    },
+    body: JSON.stringify(postData)
+})
+.then(response => response.json())
+.then(data => {
+    console.log(data);
+})
+.catch(error => {
+    console.error('Error:', error);
+});`
+                    },
+                    {
+                        lang: 'Python',
+                        code: `import requests
+import json
+
+api_key = 'your_api_key_here' # Replace with your API Key
+username = 'your_username_here' # Replace with your Username
+
+post_data = {
+    'otpcode': '62750',
+    'number': '0541234567'
+}
+
+headers = {
+    'Content-Type': 'application/json',
+    'API-KEY': api_key,
+    'USERNAME': username
+}
+
+response = requests.post('https://frogapi.wigal.com.gh/api/v3/voice/otp/verify', headers=headers, data=json.dumps(post_data))
+
+print(response.json())`
+                    },
+                    {
+                        lang: 'PHP',
+                        code: `<?php
+$apiKey = 'your_api_key_here'; // Replace with your API Key
+$username = 'your_username_here'; // Replace with your Username
+
+$postData = array(
+    'otpcode' => '62750',
+    'number' => '0541234567'
+);
+
+$ch = curl_init('https://frogapi.wigal.com.gh/api/v3/voice/otp/verify');
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_POST, true);
+curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+    'Content-Type: application/json',
+    'API-KEY: ' . $apiKey,
+    'USERNAME: ' . $username
+));
+curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($postData));
+
+$response = curl_exec($ch);
+if(curl_errno($ch)) {
+    echo 'Error:' . curl_error($ch);
+} else {
+    echo $response;
+}
+curl_close($ch);
+?>`
+                    }
+                ];
+                const requestObjectSample = [
+                    {
+                        lang: 'JSON',
+                        code: `{
+  "otpcode": "62750",
+  "number": "0541234567"
+}`
+                    }
+                ];
+                const responseSample = [
+                    {
+                        lang: '200',
+                        code: `{
+  "status": "SUCCESS",
+  "message": "Voice OTP verified successfully"
+}`
+                    },
+                    {
+                        lang: '400',
+                        code: `{
+  "status": "ERROR",
+  "message": "Missing required fields"
+}`
+                    },
+                    {
+                        lang: '404',
+                        code: `{
+  "status": "ERROR",
+  "message": "Invalid OTP code"
+}`
+                    },
+                    {
+                        lang: '408',
+                        code: `{
+  "status": "ERROR",
+  "message": "OTP code has expired"
+}`
+                    },
+                    {
+                        lang: '500',
+                        code: `{
+  "status": "ERROR",
+  "message": "Internal server error"
+}`
+                    }
+                ];
+                return (
+                    <>
+                        <h2 style={{ fontSize: '1rem', marginBottom: '1rem', color: 'var(--text-primary)', fontWeight: 700 }}>Endpoint</h2>
+                        <CodeExample samples={samples} theme={theme} />
+                        <h2 style={{ fontSize: '1rem', marginBottom: '1rem', marginTop: '3rem', color: 'var(--text-primary)', fontWeight: 700 }}>Request Object</h2>
+                        <CodeExample samples={requestObjectSample} theme={theme} />
+                        <h2 style={{ fontSize: '1rem', marginBottom: '1rem', marginTop: '3rem', color: 'var(--text-primary)', fontWeight: 700 }}>Response Object</h2>
+                        <CodeExample samples={responseSample} theme={theme} />
+                    </>
+                );
+            })()
+        }
     };
 
-    const rawContent = contentMap[activeSidebarItem] || {
+    const normalizedKey = contentMap[activeSidebarItem]
+        ? activeSidebarItem
+        : Object.keys(contentMap).find((k) => k.trim().toLowerCase() === (activeSidebarItem || '').trim().toLowerCase());
+    const rawContent = (normalizedKey ? contentMap[normalizedKey] : null) || {
         title: activeSidebarItem,
         body: (
             <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: 1.6 }}>
@@ -3003,9 +3454,9 @@ curl_close($ch);
     };
 
     const currentContent = {
-        title: rawContent.title,
-        main: rawContent.main || rawContent.body?.main || rawContent.body,
-        right: rawContent.right || rawContent.body?.right || null
+        title: rawContent?.title ?? activeSidebarItem,
+        main: rawContent?.main ?? rawContent?.body?.main ?? rawContent?.body ?? null,
+        right: rawContent?.right ?? rawContent?.body?.right ?? null
     };
 
     const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark');
@@ -3125,10 +3576,14 @@ curl_close($ch);
                     ))}
                 </aside>
 
-                <div className="content-columns">
+                <div className="content-columns" key={activeSidebarItem}>
                     <main className="main-content">
                         <h1 style={{ fontSize: '2.5rem', marginBottom: '1.5rem', fontWeight: 700 }}>{currentContent.title}</h1>
-                        {currentContent.main}
+                        {currentContent.main ?? (
+                            <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: 1.6 }}>
+                                Content for this section is loading. Select a different option from the sidebar if the issue persists.
+                            </p>
+                        )}
                     </main>
 
                     {currentContent.right && (
