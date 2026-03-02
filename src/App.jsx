@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Moon, Sun, ChevronRight, Copy, Check } from 'lucide-react';
+import { Search, Moon, Sun, ChevronRight, Copy, Check, Lightbulb } from 'lucide-react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
@@ -62,14 +62,18 @@ const EndpointBox = ({ method, url, theme }) => {
     );
 };
 
-const ResponseTable = ({ data }) => {
+const ResponseTable = ({ data, showType = true }) => {
     return (
         <div style={{ marginTop: '3rem', overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                 <thead>
                     <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
-                        <th style={{ padding: '1rem 0.5rem', fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-primary)', width: '30%' }}>Field</th>
-                        <th style={{ padding: '1rem 0.5rem', fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-primary)', width: '20%' }}>Type</th>
+                        <th style={{ padding: '1rem 0.5rem', fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-primary)', width: showType ? '30%' : '40%' }}>
+                            {showType ? 'Field' : 'Event'}
+                        </th>
+                        {showType && (
+                            <th style={{ padding: '1rem 0.5rem', fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-primary)', width: '20%' }}>Type</th>
+                        )}
                         <th style={{ padding: '1rem 0.5rem', fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-primary)' }}>Description</th>
                     </tr>
                 </thead>
@@ -79,9 +83,11 @@ const ResponseTable = ({ data }) => {
                             <td style={{ padding: '1rem 0.5rem', verticalAlign: 'top' }}>
                                 <code style={{ color: '#e67e22', fontWeight: 600, fontSize: '0.9rem' }}>{row.field}</code>
                             </td>
-                            <td style={{ padding: '1rem 0.5rem', verticalAlign: 'top' }}>
-                                <code style={{ color: '#8e44ad', fontSize: '0.85rem' }}>{row.type}</code>
-                            </td>
+                            {showType && (
+                                <td style={{ padding: '1rem 0.5rem', verticalAlign: 'top' }}>
+                                    <code style={{ color: '#8e44ad', fontSize: '0.85rem' }}>{row.type}</code>
+                                </td>
+                            )}
                             <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.5 }}>
                                 {row.description}
                             </td>
@@ -247,6 +253,27 @@ const CodeExample = ({ title, samples, theme }) => {
     );
 };
 
+const TipBox = ({ children, theme }) => {
+    const isDark = theme === 'dark';
+    return (
+        <div style={{
+            background: isDark ? 'rgba(5, 150, 105, 0.08)' : 'rgba(5, 150, 105, 0.05)',
+            border: '1px solid #10b981',
+            borderRadius: '16px',
+            padding: '1.25rem 1.75rem',
+            marginTop: '2.5rem',
+            display: 'flex',
+            gap: '1.25rem',
+            alignItems: 'center'
+        }}>
+            <Lightbulb size={24} style={{ color: '#10b981', flexShrink: 0 }} />
+            <div style={{ color: isDark ? '#a7f3d0' : '#065f46', fontSize: '1rem', fontWeight: 400, lineHeight: 1.6 }}>
+                {children}
+            </div>
+        </div>
+    );
+};
+
 function App() {
     const [activeTab, setActiveTab] = useState('Introduction');
     const [activeSidebarItem, setActiveSidebarItem] = useState('Starting with frog');
@@ -277,7 +304,11 @@ function App() {
             },
             {
                 title: 'SMS',
-                items: ['Send General', 'Send Personalized', 'Generate OTP', 'Verify OTP']
+                items: ['Send General', 'Send Personalized', 'SMS Generate OTP', 'SMS Verify OTP']
+            },
+            {
+                title: 'Voice',
+                items: ['Send Voice', 'Send voice interactive', 'Voice Generate OTP', 'Voice Verify OTP']
             }
         ],
         'Smart USSD': [
@@ -1654,7 +1685,7 @@ curl_close($ch);
                 };
             })()
         },
-        'Generate OTP': {
+        'SMS Generate OTP': {
             title: 'SMS OTP Generation',
             body: (() => {
                 const samples = [
@@ -1905,7 +1936,7 @@ curl_close($ch);
                 };
             })()
         },
-        'Verify OTP': {
+        'SMS Verify OTP': {
             title: 'SMS OTP Verification',
             body: (() => {
                 const samples = [
@@ -2011,6 +2042,44 @@ curl_close($ch);
                     }
                 ];
 
+                const responseSample = [
+                    {
+                        lang: '200',
+                        code: `{
+    "status": "SUCCESS",
+    "message": "OTP verified successfully"
+}`
+                    },
+                    {
+                        lang: '400',
+                        code: `{
+    "status": "ERROR",
+    "message": "Missing required fields"
+}`
+                    },
+                    {
+                        lang: '404',
+                        code: `{
+    "status": "ERROR",
+    "message": "Invalid OTP code"
+}`
+                    },
+                    {
+                        lang: '408',
+                        code: `{
+    "status": "ERROR",
+    "message": "OTP code has expired"
+}`
+                    },
+                    {
+                        lang: '500',
+                        code: `{
+    "status": "ERROR",
+    "message": "Internal server error"
+}`
+                    }
+                ];
+
                 return {
                     main: (
                         <>
@@ -2076,11 +2145,852 @@ curl_close($ch);
 
                             <h2 style={{ fontSize: '1rem', marginBottom: '1rem', marginTop: '3rem', color: 'var(--text-primary)', fontWeight: 700 }}>Request Object</h2>
                             <CodeExample samples={requestObjectSample} theme={theme} />
+
+                            <h2 style={{ fontSize: '1rem', marginBottom: '1rem', marginTop: '3rem', color: 'var(--text-primary)', fontWeight: 700 }}>Response Object</h2>
+                            <CodeExample samples={responseSample} theme={theme} />
                         </>
                     )
                 };
             })()
-        }
+        },
+        'Send Voice': {
+            title: 'Send Voice',
+            body: (() => {
+                const samples = [
+                    {
+                        lang: 'cURL',
+                        code: `curl -X POST 'https://frogapi.wigal.com.gh/api/v3/voice/send' \\
+-H "API-KEY: your_api_key_here" \\
+-H "USERNAME: your_username_here" \\
+-d '{
+    "callerid": "your_caller_id",
+    "soundurl": "https://example.com/sound.wav",
+    "servicetype": "CALL",
+    "destinations": [{
+        "destination": "0276128936",
+        "msgid": "MSG123456789"
+    }]
+}'`
+                    },
+                    {
+                        lang: 'JavaScript',
+                        code: `const apiKey = 'your_api_key_here'; // Replace with your API Key
+const username = 'your_username_here'; // Replace with your Username
+
+const postData = {
+    "callerid": "your_caller_id",
+    "soundurl": "https://example.com/sound.wav",
+    "servicetype": "CALL",
+    "destinations": [{
+        "destination": "0276128936",
+        "msgid": "MSG123456789"
+    }]
+};
+
+fetch('https://frogapi.wigal.com.gh/api/v3/voice/send', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        'API-KEY': apiKey,
+        'USERNAME': username
+    },
+    body: JSON.stringify(postData)
+})
+.then(response => response.json())
+.then(data => {
+    console.log(data);
+})
+.catch(error => {
+    console.error('Error:', error);
+});`
+                    },
+                    {
+                        lang: 'Python',
+                        code: `import requests
+import json
+
+api_key = 'your_api_key_here' # Replace with your API Key
+username = 'your_username_here' # Replace with your Username
+
+post_data = {
+    'callerid': 'your_caller_id',
+    'soundurl': 'https://example.com/sound.wav',
+    'servicetype': 'CALL',
+    'destinations': [{
+        'destination': '0276128936',
+        'msgid': 'MSG123456789'
+    }]
+}
+
+headers = {
+    'Content-Type': 'application/json',
+    'API-KEY': api_key,
+    'USERNAME': username
+}
+
+response = requests.post('https://frogapi.wigal.com.gh/api/v3/voice/send', headers=headers, data=json.dumps(post_data))
+
+print(response.json())`
+                    },
+                    {
+                        lang: 'PHP',
+                        code: `<?php
+$apiKey = 'your_api_key_here'; // Replace with your API Key
+$username = 'your_username_here'; // Replace with your Username
+
+$postData = array(
+    'callerid' => 'your_caller_id',
+    'soundurl' => 'https://example.com/sound.wav',
+    'servicetype' => 'CALL',
+    'destinations' => array(
+        array(
+            'destination' => '0276128936',
+            'msgid' => 'MSG123456789'
+        )
+    )
+);
+
+$ch = curl_init('https://frogapi.wigal.com.gh/api/v3/voice/send');
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_POST, true);
+curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+    'Content-Type: application/json',
+    'API-KEY: ' . $apiKey,
+    'USERNAME: ' . $username
+));
+curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($postData));
+
+$response = curl_exec($ch);
+if(curl_errno($ch)) {
+    echo 'Error:' . curl_error($ch);
+} else {
+    echo $response;
+}
+curl_close($ch);
+?>`
+                    }
+                ];
+
+                const requestObjectSample = [
+                    {
+                        lang: 'JSON',
+                        code: `{
+  "callerid": "your_caller_id",
+  "soundurl": "https://example.com/sound.wav",
+  "servicetype": "CALL",
+  "destinations": [
+    {
+      "destination": "0276128936",
+      "msgid": "MSG123456789"
+    }
+  ]
+}`
+                    }
+                ];
+
+                const responseSample = [
+                    {
+                        lang: '200',
+                        code: `{
+    "status": "ACCEPTD",
+    "message": "Message Accepted For Processing"
+}`
+                    },
+                    {
+                        lang: '400',
+                        code: `{
+    "status": "ERROR",
+    "message": "Invalid request parameters"
+}`
+                    },
+                    {
+                        lang: '401',
+                        code: `{
+    "status": "UNAUTHORIZED",
+    "message": "Authentication failed"
+}`
+                    },
+                    {
+                        lang: '403',
+                        code: `{
+    "status": "FORBIDDEN",
+    "message": "Insufficient permissions"
+}`
+                    },
+                    {
+                        lang: '404',
+                        code: `{
+    "status": "ERROR",
+    "message": "Resource not found"
+}`
+                    },
+                    {
+                        lang: '500',
+                        code: `{
+    "status": "ERROR",
+    "message": "Internal server error"
+}`
+                    }
+                ];
+
+                return {
+                    main: (
+                        <>
+                            <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: 1.6 }}>
+                                Send voice messages.
+                            </p>
+                            <EndpointBox method="POST" url="https://frogapi.wigal.com.gh/api/v3/voice/send" theme={theme} />
+
+                            <h2 style={{ fontSize: '1.75rem', marginBottom: '1rem', marginTop: '4rem', fontWeight: 700 }}>Request Object</h2>
+                            <ResponseTable data={[
+                                { field: 'callerid', type: 'string', description: "The caller ID used for the voice call. Note: If you don't add a caller ID, a default one will be used. If you want a specific caller ID, you must subscribe to it." },
+                                { field: 'soundurl', type: 'string', description: 'URL to the sound file to be played. Accepted sound: WAV file (Channels: mono, Format: wav(a-law), Sample rate: 8KHz, Bit rate: 64kbps)' },
+                                { field: 'servicetype', type: 'string', description: 'The type of service. Default is "CALL"' },
+                                { field: 'destinations', type: 'array', description: 'Array of destination objects containing destination phone number and message ID' },
+                                { field: 'destinations[].destination', type: 'string', description: 'Recipient Phone Number' },
+                                { field: 'destinations[].msgid', type: 'string', description: 'Your message ID' }
+                            ]} />
+
+                            <h2 style={{ fontSize: '1.75rem', marginBottom: '1rem', marginTop: '4rem', fontWeight: 700 }}>Response Object</h2>
+                            <ResponseTable data={[
+                                { field: 'status', type: 'string', description: 'The status of the request' },
+                                { field: 'message', type: 'string', description: 'The message response' }
+                            ]} />
+
+                            <h2 style={{ fontSize: '1.75rem', marginBottom: '1rem', marginTop: '4rem', fontWeight: 700 }}>Responses</h2>
+
+                            <ResponseAccordion code="200" status="OK">
+                                <ResponseTable data={[
+                                    { field: 'status', type: 'string', description: 'Returns "ACCEPTD" when voice message is successfully accepted for processing' },
+                                    { field: 'message', type: 'string', description: 'Returns "Message Accepted For Processing" on successful request' }
+                                ]} />
+                            </ResponseAccordion>
+
+                            <ResponseAccordion code="400" status="INVALID REQUEST" type="error">
+                                <ResponseTable data={[
+                                    { field: 'status', type: 'string', description: 'Error status code ("INVALID_REQUEST")' },
+                                    { field: 'message', type: 'string', description: 'Detailed error message explaining the issue' }
+                                ]} />
+                            </ResponseAccordion>
+
+                            <ResponseAccordion code="401" status="UNAUTHORIZED" type="error">
+                                <ResponseTable data={[
+                                    { field: 'status', type: 'string', description: 'Error status code ("UNAUTHORIZED")' },
+                                    { field: 'message', type: 'string', description: 'Message Response' }
+                                ]} />
+                            </ResponseAccordion>
+
+                            <ResponseAccordion code="403" status="FORBIDDEN" type="error">
+                                <ResponseTable data={[
+                                    { field: 'status', type: 'string', description: 'Error status code ("FORBIDDEN")' },
+                                    { field: 'message', type: 'string', description: 'Message Response' }
+                                ]} />
+                            </ResponseAccordion>
+
+                            <ResponseAccordion code="404" status="NOT FOUND" type="error">
+                                <ResponseTable data={[
+                                    { field: 'status', type: 'string', description: 'Error status code' },
+                                    { field: 'message', type: 'string', description: 'Detailed error message explaining the issue' }
+                                ]} />
+                            </ResponseAccordion>
+
+                            <ResponseAccordion code="500" status="SERVER ERROR" type="error">
+                                <ResponseTable data={[
+                                    { field: 'status', type: 'string', description: 'Returns "ERROR" for server errors' },
+                                    { field: 'message', type: 'string', description: 'Generic error message "Internal server error"' }
+                                ]} />
+                            </ResponseAccordion>
+                        </>
+                    ),
+                    right: (
+                        <>
+                            <h2 style={{ fontSize: '1rem', marginBottom: '1rem', color: 'var(--text-primary)', fontWeight: 700 }}>Endpoint</h2>
+                            <CodeExample samples={samples} theme={theme} />
+
+                            <h2 style={{ fontSize: '1rem', marginBottom: '1rem', marginTop: '3rem', color: 'var(--text-primary)', fontWeight: 700 }}>Request Object</h2>
+                            <CodeExample samples={requestObjectSample} theme={theme} />
+
+                            <h2 style={{ fontSize: '1rem', marginBottom: '1rem', marginTop: '3rem', color: 'var(--text-primary)', fontWeight: 700 }}>Response Object</h2>
+                            <CodeExample samples={responseSample} theme={theme} />
+                        </>
+                    )
+                };
+            })()
+        },
+        'Send voice interactive': (() => {
+            const samples = [
+                {
+                    lang: 'curl',
+                    code: `curl -X POST 'https://frogapi.wigal.com.gh/api/v3/voice/send/dynamic' \
+-H "API-KEY: your_api_key_here" \
+-H "USERNAME: your_username_here" \
+-d '{
+  "callerid": "your_caller_id",
+  "servicetype": "CALL",
+  "destinations": [{
+    "destination": "0276128936",
+    "msgid": "MSG123456789"
+  }]
+}'`
+                },
+                {
+                    lang: 'javascript',
+                    code: `const apiKey = 'your_api_key_here'; // Replace with your API Key
+const username = 'your_username_here'; // Replace with your Username
+const postData = {
+    "callerid": "your_caller_id",
+    "servicetype": "CALL",
+    "destinations": [{
+        "destination": "0276128936",
+        "msgid": "MSG123456789"
+    }]
+};
+
+fetch('https://frogapi.wigal.com.gh/api/v3/voice/send/dynamic', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        'API-KEY': apiKey,
+        'USERNAME': username
+    },
+    body: JSON.stringify(postData)
+})
+.then(response => response.json())
+.then(data => {
+    console.log(data);
+})
+.catch(error => {
+    console.error('Error:', error);
+});`
+                },
+                {
+                    lang: 'python',
+                    code: `import requests
+import json
+
+api_key = 'your_api_key_here' # Replace with your API Key
+username = 'your_username_here' # Replace with your Username
+post_data = {
+    'callerid': 'your_caller_id',
+    'servicetype': 'CALL',
+    'destinations': [{
+        'destination': '0276128936',
+        'msgid': 'MSG123456789'
+    }]
+}
+
+headers = {
+    'Content-Type': 'application/json',
+    'API-KEY': api_key,
+    'USERNAME': username
+}
+
+response = requests.post('https://frogapi.wigal.com.gh/api/v3/voice/send/dynamic', headers=headers, data=json.dumps(post_data))
+
+print(response.json())`
+                },
+                {
+                    lang: 'php',
+                    code: `<?php
+$apiKey = 'your_api_key_here'; // Replace with your API Key
+$username = 'your_username_here'; // Replace with your Username
+$postData = array(
+    'callerid' => 'your_caller_id',
+    'servicetype' => 'CALL',
+    'destinations' => array(
+        array(
+            'destination' => '0276128936',
+            'msgid' => 'MSG123456789'
+        )
+    )
+);
+
+$ch = curl_init('https://frogapi.wigal.com.gh/api/v3/voice/send/dynamic');
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_POST, true);
+curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+    'Content-Type: application/json',
+    'API-KEY: ' . $apiKey,
+    'USERNAME: ' . $username
+));
+curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($postData));
+
+$response = curl_exec($ch);
+if(curl_errno($ch)) {
+    echo 'Error:' . curl_error($ch);
+} else {
+    echo $response;
+}
+curl_close($ch);
+?>`
+                }
+            ];
+
+            const requestObjectSample = [
+                {
+                    lang: 'json',
+                    code: `{
+  "callerid": "your_caller_id",
+  "servicetype": "CALL",
+  "destinations": [
+    {
+      "destination": "0276128936",
+      "msgid": "MSG123456789"
+    }
+  ]
+}`
+                }
+            ];
+
+            const responseSample = [
+                {
+                    lang: '200',
+                    code: `{
+  "status": "ACCEPTD",
+  "message": "Message Accepted For Processing"
+}`
+                },
+                {
+                    lang: '400',
+                    code: `{
+  "status": "ERROR",
+  "message": "Invalid request parameters"
+}`
+                },
+                {
+                    lang: '401',
+                    code: `{
+  "status": "UNAUTHORIZED",
+  "message": "Authentication failed"
+}`
+                },
+                {
+                    lang: '403',
+                    code: `{
+  "status": "FORBIDDEN",
+  "message": "Insufficient permissions"
+}`
+                },
+                {
+                    lang: '404',
+                    code: `{
+  "status": "ERROR",
+  "message": "Resource not found"
+}`
+                },
+                {
+                    lang: '500',
+                    code: `{
+  "status": "ERROR",
+  "message": "Internal server error"
+}`
+                }
+            ];
+
+            return {
+                title: 'Send voice interactive',
+                main: (
+                    <>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: 1.6 }}>
+                            Send interactive voice messages.
+                        </p>
+                        <EndpointBox method="POST" url="https://frogapi.wigal.com.gh/api/v3/voice/send/dynamic" theme={theme} />
+
+                        <h2 style={{ fontSize: '1.75rem', marginBottom: '1rem', marginTop: '4rem', fontWeight: 700 }}>Request Object</h2>
+
+                        <div style={{
+                            background: theme === 'dark' ? '#0a0a0a' : '#ffffff',
+                            borderRadius: '16px',
+                            border: `1px solid ${theme === 'dark' ? 'var(--border-color)' : '#e2e8f0'}`,
+                            overflow: 'hidden',
+                            marginBottom: '3rem',
+                            marginTop: '2rem'
+                        }}>
+                            <div style={{
+                                padding: '0.75rem 1.5rem',
+                                borderBottom: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.05)' : '#e2e8f0'}`,
+                                background: theme === 'dark' ? 'rgba(255,255,255,0.02)' : '#f8fafc',
+                                fontSize: '0.8rem',
+                                fontWeight: 600,
+                                color: 'var(--text-secondary)'
+                            }}>
+                                Request Body
+                            </div>
+                            <SyntaxHighlighter
+                                language="json"
+                                style={vscDarkPlus}
+                                customStyle={{
+                                    margin: 0,
+                                    padding: '1.5rem',
+                                    background: theme === 'dark' ? '#0a0a0a' : '#ffffff',
+                                    fontSize: '0.9rem',
+                                    lineHeight: 1.6
+                                }}
+                            >
+                                {`{
+  "callerid": "your_caller_id",
+  "servicetype": "CALL",
+  "destinations": [
+    {
+      "destination": "0276128936",
+      "msgid": "MSG123456789"
+    }
+  ]
+}`}
+                            </SyntaxHighlighter>
+                        </div>
+
+                        <ResponseTable data={[
+                            { field: 'callerid', type: 'string', description: 'The caller ID used for the voice call' },
+                            { field: 'servicetype', type: 'string', description: 'The type of service. Default is "CALL"' },
+                            { field: 'destinations', type: 'array', description: 'Array of destination objects containing destination phone number and message ID' },
+                            { field: 'destinations[].destination', type: 'string', description: 'Recipient Phone Number' },
+                            { field: 'destinations[].msgid', type: 'string', description: 'Your message ID' }
+                        ]} />
+
+                        <h2 style={{ fontSize: '1.75rem', marginBottom: '1rem', marginTop: '4rem', fontWeight: 700 }}>Response Object</h2>
+                        <ResponseTable data={[
+                            { field: 'status', type: 'string', description: 'The status of the request' },
+                            { field: 'message', type: 'string', description: 'The message response' }
+                        ]} />
+
+                        <h2 style={{ fontSize: '1.75rem', marginBottom: '1rem', marginTop: '4rem', fontWeight: 700 }}>Responses</h2>
+
+                        <ResponseAccordion code="200" status="OK">
+                            <ResponseTable data={[
+                                { field: 'status', type: 'string', description: 'Returns "ACCEPTD" when message is accepted for processing' },
+                                { field: 'message', type: 'string', description: 'Returns "Message Accepted For Processing" on successful request' }
+                            ]} />
+                        </ResponseAccordion>
+
+                        <ResponseAccordion code="400" status="BAD REQUEST" type="error">
+                            <ResponseTable data={[
+                                { field: 'status', type: 'string', description: 'Error status code ("INVALID_REQUEST")' },
+                                { field: 'message', type: 'string', description: 'Detailed error message explaining the issue' }
+                            ]} />
+                        </ResponseAccordion>
+
+                        <ResponseAccordion code="401" status="UNAUTHORIZED" type="error">
+                            <ResponseTable data={[
+                                { field: 'status', type: 'string', description: 'Error status code ("UNAUTHORIZED")' },
+                                { field: 'message', type: 'string', description: 'Message Response' }
+                            ]} />
+                        </ResponseAccordion>
+
+                        <ResponseAccordion code="403" status="FORBIDDEN" type="error">
+                            <ResponseTable data={[
+                                { field: 'status', type: 'string', description: 'Error status code ("FORBIDDEN")' },
+                                { field: 'message', type: 'string', description: 'Message Response' }
+                            ]} />
+                        </ResponseAccordion>
+
+                        <ResponseAccordion code="404" status="NOT FOUND" type="error">
+                            <ResponseTable data={[
+                                { field: 'status', type: 'string', description: 'Error status code' },
+                                { field: 'message', type: 'string', description: 'Detailed error message explaining the issue' }
+                            ]} />
+                        </ResponseAccordion>
+
+                        <ResponseAccordion code="500" status="SERVER ERROR" type="error">
+                            <ResponseTable data={[
+                                { field: 'status', type: 'string', description: 'Returns "ERROR" for server errors' },
+                                { field: 'message', type: 'string', description: 'Generic error message "Internal server error"' }
+                            ]} />
+                        </ResponseAccordion>
+
+                        <h2 style={{ fontSize: '1.75rem', marginBottom: '1rem', marginTop: '4rem', fontWeight: 700 }}>Voice Callback URL</h2>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: 1.6, marginBottom: '2rem' }}>
+                            Your Voice Callback URL allows FROG to send real-time call events to your application and receive your responses to control the interactive voice call flow.
+                        </p>
+
+                        <h3 style={{ fontSize: '1.25rem', marginBottom: '1rem', marginTop: '2rem', fontWeight: 600 }}>How It Works</h3>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                            <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+                                <div style={{
+                                    width: '24px',
+                                    height: '24px',
+                                    background: 'rgba(16, 185, 129, 0.1)',
+                                    color: 'rgb(16, 185, 129)',
+                                    borderRadius: '50%',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontSize: '0.8rem',
+                                    fontWeight: 700,
+                                    flexShrink: 0
+                                }}>1</div>
+                                <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', lineHeight: 1.5, margin: 0 }}>
+                                    Provide Your Callback URL To Frog By Configuring It In Your Account Settings.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div style={{ marginTop: '2.5rem', borderRadius: '16px', overflow: 'hidden', border: '1px solid var(--border-color)', background: 'rgba(0,0,0,0.05)', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
+                            <video
+                                src="/videos/voice-callback.webm"
+                                autoPlay
+                                loop
+                                muted
+                                playsInline
+                                style={{ width: '100%', display: 'block' }}
+                            />
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '2.5rem' }}>
+                            <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+                                <div style={{
+                                    width: '24px',
+                                    height: '24px',
+                                    background: 'rgba(16, 185, 129, 0.1)',
+                                    color: 'rgb(16, 185, 129)',
+                                    borderRadius: '50%',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontSize: '0.8rem',
+                                    fontWeight: 700,
+                                    flexShrink: 0
+                                }}>2</div>
+                                <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', lineHeight: 1.5, margin: 0 }}>
+                                    When call events occur (e.g., DIALED, RINGING, ANSWERED, ENDED), FROG will send an HTTP POST request to your callback URL with relevant call data.
+                                </p>
+                            </div>
+                            <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+                                <div style={{
+                                    width: '24px',
+                                    height: '24px',
+                                    background: 'rgba(16, 185, 129, 0.1)',
+                                    color: 'rgb(16, 185, 129)',
+                                    borderRadius: '50%',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontSize: '0.8rem',
+                                    fontWeight: 700,
+                                    flexShrink: 0
+                                }}>3</div>
+                                <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', lineHeight: 1.5, margin: 0 }}>
+                                    Your endpoint should process the callback and respond with an action to control the call flow (e.g., READ, PLAY, COLLECT, RECORD).
+                                </p>
+                            </div>
+                        </div>
+
+                        <h2 style={{ fontSize: '1.75rem', marginBottom: '1rem', marginTop: '4rem', fontWeight: 700 }}>Callback to you</h2>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: 1.6, marginBottom: '2rem' }}>
+                            FROG will send an HTTP POST request to your callback URL endpoint with the following payload structure:
+                        </p>
+
+                        <div style={{
+                            background: theme === 'dark' ? '#0a0a0a' : '#ffffff',
+                            borderRadius: '16px',
+                            border: `1px solid ${theme === 'dark' ? 'var(--border-color)' : '#e2e8f0'}`,
+                            overflow: 'hidden',
+                            marginBottom: '4rem'
+                        }}>
+                            <div style={{
+                                padding: '0.75rem 1.5rem',
+                                borderBottom: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.05)' : '#e2e8f0'}`,
+                                background: theme === 'dark' ? 'rgba(255,255,255,0.02)' : '#f8fafc',
+                                fontSize: '0.8rem',
+                                fontWeight: 600,
+                                color: 'var(--text-secondary)'
+                            }}>
+                                Request Payload
+                            </div>
+                            <SyntaxHighlighter
+                                language="json"
+                                style={vscDarkPlus}
+                                customStyle={{
+                                    margin: 0,
+                                    padding: '1.5rem',
+                                    background: theme === 'dark' ? '#0a0a0a' : '#ffffff',
+                                    fontSize: '0.9rem',
+                                    lineHeight: 1.6
+                                }}
+                            >
+                                {`{
+  "channelid": "CH123456789",
+  "activitytime": "2024-04-23T14:59:14.143+00:00",
+  "additionaldetails": "Call connected successfully",
+  "event": "ANSWERED",
+  "batchid": "BATCH001",
+  "callfrom": "233276128036",
+  "callto": "233276128037",
+  "clientid": "MSG123456789",
+  "callstarttime": "2024-04-23T14:58:00.000+00:00",
+  "callendtime": "2024-04-23T14:59:30.000+00:00",
+  "callduration": 90,
+  "direction": "Outbound",
+  "keypressed": "1"
+}`}
+                            </SyntaxHighlighter>
+                        </div>
+
+                        <ResponseTable data={[
+                            { field: 'channelid', type: 'string', description: 'The unique ID for the call generated by Wigal' },
+                            { field: 'activitytime', type: 'string', description: 'Timestamp of the event' },
+                            { field: 'additionaldetails', type: 'string', description: 'Any additional details for the event' },
+                            { field: 'event', type: 'string', description: 'The event type (see Events list below)' },
+                            { field: 'batchid', type: 'string', description: 'Batch ID from Wigal' },
+                            { field: 'callfrom', type: 'string', description: 'The caller ID' },
+                            { field: 'callto', type: 'string', description: 'The destination number' },
+                            { field: 'clientid', type: 'string', description: 'The unique ID the customer input when initiating the call (message ID)' },
+                            { field: 'callstarttime', type: 'string', description: 'Timestamp when the call started' },
+                            { field: 'callendtime', type: 'string', description: 'Timestamp when the call ended' },
+                            { field: 'callduration', type: 'integer', description: 'Duration of the call in seconds' },
+                            { field: 'direction', type: 'string', description: 'Call direction: "Inbound" or "Outbound"' },
+                            { field: 'keypressed', type: 'string', description: 'Any key pressed during the call' }
+                        ]} />
+
+                        <h2 style={{ fontSize: '1.75rem', marginBottom: '1rem', marginTop: '4rem', fontWeight: 700 }}>Events</h2>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: 1.6, marginBottom: '2rem' }}>
+                            The following events can be sent to your callback URL:
+                        </p>
+                        <ResponseTable showType={false} data={[
+                            { field: 'DIALED', description: 'Call has been dialed' },
+                            { field: 'RINGING', description: 'Call is ringing' },
+                            { field: 'ANSWERED', description: 'Call has been answered' },
+                            { field: 'PROGRESS', description: 'Call is in progress' },
+                            { field: 'ENDING', description: 'Call is ending' },
+                            { field: 'ENDED', description: 'Call has ended' },
+                            { field: 'Playback Started', description: 'Playback has started' },
+                            { field: 'PlaybackFinished', description: 'Playback has finished' },
+                            { field: 'PlaybackContinuing', description: 'Playback is continuing' },
+                            { field: 'RecordingFinished', description: 'Recording has finished' },
+                            { field: 'RecordingStarted', description: 'Recording has started' },
+                            { field: 'RecordingFailed', description: 'Recording failed' },
+                            { field: 'Answer', description: 'Call has been answered' },
+                            { field: 'Dial', description: 'Call has been dialed' },
+                            { field: 'ChannelDtmfReceived', description: 'The event contains the channel that pressed the DTMF key' }
+                        ]} />
+
+                        <h2 style={{ fontSize: '1.75rem', marginBottom: '1rem', marginTop: '4rem', fontWeight: 700 }}>Actions</h2>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: 1.6, marginBottom: '2rem' }}>
+                            The following actions can be sent in your response to control the call flow:
+                        </p>
+
+                        <TipBox theme={theme}>
+                            <strong>Note:</strong> Actions can also trigger events depending on the action type. For example, when you send a <strong>PLAY</strong> action, you may receive events related to playback status. Similarly, <strong>COLLECT</strong> actions may generate events when digits are pressed, and <strong>RECORD</strong> actions may trigger events related to recording status.
+                        </TipBox>
+
+                        <ResponseTable showType={false} data={[
+                            { field: 'READ', description: 'Read text to the caller' },
+                            { field: 'PLAY', description: 'Play audio to the caller' },
+                            { field: 'COLLECT', description: 'Collect input from the caller (DTMF)' },
+                            { field: 'RECORD', description: 'Record audio from the caller' },
+                            { field: 'DISCONNECT', description: 'Disconnect the call' },
+                            { field: 'STOPRECORD', description: 'Stop recording audio' },
+                            { field: 'STOPPLAY', description: 'Stop playing audio' },
+                            { field: 'CONTINUE', description: 'Continue with the next step in the flow' }
+                        ]} />
+
+                        <TipBox theme={theme}>
+                            <strong>Audio Format Requirements:</strong> For <strong>PLAY</strong> and <strong>RECORD</strong> actions, the <code>actiondata</code> field must contain an accessible audio URL. The audio file must be in <strong>WAV</strong> format with the following specifications:
+                            <ul style={{ marginTop: '0.5rem', marginLeft: '1.5rem', listStyleType: 'disc' }}>
+                                <li><strong>Format:</strong> WAV (a-law)</li>
+                                <li><strong>Channels:</strong> Mono</li>
+                                <li><strong>Sample rate:</strong> 8KHz</li>
+                                <li><strong>Bit rate:</strong> 64kbps</li>
+                            </ul>
+                        </TipBox>
+
+                        <h2 style={{ fontSize: '1.75rem', marginBottom: '1rem', marginTop: '4rem', fontWeight: 700 }}>Response from your Callback</h2>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: 1.6, marginBottom: '2rem' }}>
+                            Your endpoint should respond with the following payload structure to control the call flow:
+                        </p>
+
+                        <div style={{
+                            background: theme === 'dark' ? '#0a0a0a' : '#ffffff',
+                            borderRadius: '16px',
+                            border: `1px solid ${theme === 'dark' ? 'var(--border-color)' : '#e2e8f0'}`,
+                            overflow: 'hidden',
+                            marginBottom: '4rem'
+                        }}>
+                            <div style={{
+                                padding: '0.75rem 1.5rem',
+                                borderBottom: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.05)' : '#e2e8f0'}`,
+                                background: theme === 'dark' ? 'rgba(255,255,255,0.02)' : '#f8fafc',
+                                fontSize: '0.8rem',
+                                fontWeight: 600,
+                                color: 'var(--text-secondary)'
+                            }}>
+                                Response Payload
+                            </div>
+                            <SyntaxHighlighter
+                                language="json"
+                                style={vscDarkPlus}
+                                customStyle={{
+                                    margin: 0,
+                                    padding: '1.5rem',
+                                    background: theme === 'dark' ? '#0a0a0a' : '#ffffff',
+                                    fontSize: '0.9rem',
+                                    lineHeight: 1.6
+                                }}
+                            >
+                                {`{
+  "channelid": "CH123456789",
+  "action": "PLAY",
+  "actiondata": "https://example.com/audio/welcome.wav",
+  "batchid": "BATCH001",
+  "callfrom": "233276128036",
+  "callto": "233276128037",
+  "clientid": "MSG123456789"
+}`}
+                            </SyntaxHighlighter>
+                        </div>
+
+                        <ResponseTable data={[
+                            { field: 'channelid', type: 'string', description: 'The unique call ID from Wigal (same as received in callback)' },
+                            { field: 'action', type: 'string', description: 'The action to perform (see Action list below)' },
+                            { field: 'actiondata', type: 'string', description: 'Any required data depending on the action. For PLAY and RECORD actions, this must be an accessible audio URL (WAV format: mono, a-law, 8KHz, 64kbps)' },
+                            { field: 'batchid', type: 'string', description: 'The same batch ID from Wigal (same as received in callback)' },
+                            { field: 'callfrom', type: 'string', description: 'The caller ID (same as received in callback)' },
+                            { field: 'callto', type: 'string', description: 'The destination number (same as received in callback)' },
+                            { field: 'clientid', type: 'string', description: 'The message ID from the initial call (same as received in callback)' }
+                        ]} />
+
+                        <h2 style={{ fontSize: '1.75rem', marginBottom: '1rem', marginTop: '4rem', fontWeight: 700 }}>What Are The Benefits?</h2>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginTop: '2rem' }}>
+                            {[
+                                { title: 'Real-time Control', desc: 'Control the interactive voice call flow in real-time based on call events.' },
+                                { title: 'Dynamic Interactions', desc: 'Create dynamic voice interactions that respond to user input and call state.' },
+                                { title: 'Automation', desc: 'Automate complex voice workflows without manual intervention.' },
+                                { title: 'Reliability', desc: 'Receive real-time updates about call status and events.' }
+                            ].map((benefit, i) => (
+                                <div key={i} style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+                                    <div style={{
+                                        width: '8px',
+                                        height: '8px',
+                                        borderRadius: '50%',
+                                        background: 'var(--brand-green)',
+                                        marginTop: '0.6rem',
+                                        flexShrink: 0
+                                    }} />
+                                    <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: 1.6, margin: 0 }}>
+                                        <strong style={{ color: 'var(--text-primary)' }}>{benefit.title}:</strong> {benefit.desc}
+                                    </p>
+                                </div>
+                            ))}
+                        </div>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: 1.6, marginTop: '3rem', fontStyle: 'italic', borderLeft: '4px solid var(--brand-green)', paddingLeft: '1.5rem' }}>
+                            In summary, a Voice Callback URL is essential for implementing interactive voice calls, providing real-time event notifications and enabling dynamic call flow control.
+                        </p>
+                    </>
+                ),
+                right: (
+                    <>
+                        <h2 style={{ fontSize: '1rem', marginBottom: '1rem', color: 'var(--text-primary)', fontWeight: 700 }}>Endpoint</h2>
+                        <CodeExample samples={samples} theme={theme} />
+
+                        <h2 style={{ fontSize: '1rem', marginBottom: '1rem', marginTop: '3rem', color: 'var(--text-primary)', fontWeight: 700 }}>Request Object</h2>
+                        <CodeExample samples={requestObjectSample} theme={theme} />
+
+                        <h2 style={{ fontSize: '1rem', marginBottom: '1rem', marginTop: '3rem', color: 'var(--text-primary)', fontWeight: 700 }}>Response Object</h2>
+                        <CodeExample samples={responseSample} theme={theme} />
+                    </>
+                )
+            };
+        })()
     };
 
     const rawContent = contentMap[activeSidebarItem] || {
