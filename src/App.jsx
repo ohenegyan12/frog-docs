@@ -277,7 +277,7 @@ function App() {
             },
             {
                 title: 'SMS',
-                items: ['Send General', 'Send Personalized', 'Generate OTP', 'Verify']
+                items: ['Send General', 'Send Personalized', 'Generate OTP', 'Verify OTP']
             }
         ],
         'Smart USSD': [
@@ -1422,45 +1422,664 @@ curl_close($ch);
         },
         'Send Personalized': {
             title: 'Send Personalized Messages',
-            main: (
-                <>
-                    <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: 1.6 }}>
-                        Send Personalized Messages.
-                    </p>
-                    <EndpointBox method="POST" url="https://frogapi.wigal.com.gh/api/v3/sms/send" theme={theme} />
+            body: (() => {
+                const samples = [
+                    {
+                        lang: 'cURL',
+                        code: `curl -X POST 'https://frogapi.wigal.com.gh/api/v3/sms/send' \\
+-H "API-KEY: your_api_key_here" \\
+-H "USERNAME: your_username_here" \\
+-d '{
+    "senderid": "OGK123",
+    "destinations": [{
+        "destination": "0542709440",
+        "message": "Hello Joe your order is ready",
+        "msgid": "MGS1010101",
+        "smstype": "text"
+    }]
+}'`
+                    },
+                    {
+                        lang: 'JavaScript',
+                        code: `const apiKey = 'your_api_key_here'; // Replace with your API Key
+const username = 'your_username_here'; // Replace with your Username
+const postData = {
+    "senderid": "OGK123",
+    "destinations": [{
+        "destination": "0542709440",
+        "message": "Hello Joe your order is ready",
+        "msgid": "MGS1010101",
+        "smstype": "text"
+    }]
+};
 
-                    <h2 style={{ fontSize: '1.75rem', marginBottom: '1rem', marginTop: '4rem', fontWeight: 700 }}>Request Object</h2>
-                    <ResponseTable data={[
-                        { field: 'senderid', type: 'string', description: 'The senderID used for sending message. Approved SenderIDs only' },
-                        { field: 'destination', type: 'string', description: 'Recipient Phone Number.' },
-                        { field: 'msgid', type: 'string', description: 'Your message ID.' },
-                        { field: 'message', type: 'string', description: 'The message to be sent.' },
-                        { field: 'smstype', type: 'string', description: 'The type of message to be sent. Default is text.' }
-                    ]} />
+fetch('https://frogapi.wigal.com.gh/api/v3/sms/send', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        'API-KEY': apiKey,
+        'USERNAME': username
+    },
+    body: JSON.stringify(postData)
+})
+.then(response => response.json())
+.then(data => {
+    console.log(data);
+})
+.catch(error => {
+    console.error('Error:', error);
+});`
+                    },
+                    {
+                        lang: 'Python',
+                        code: `import requests
+import json
 
-                    <h2 style={{ fontSize: '1.75rem', marginBottom: '1rem', marginTop: '4rem', fontWeight: 700 }}>Response Object</h2>
-                    <ResponseTable data={[
-                        { field: 'status', type: 'string', description: 'The status of the request.' },
-                        { field: 'message', type: 'string', description: 'The message response.' }
-                    ]} />
-                </>
-            )
+api_key = 'your_api_key_here' # Replace with your API Key
+username = 'your_username_here' # Replace with your Username
+post_data = {
+    'senderid': 'OGK123',
+    'destinations': [{
+        'destination': '0542709440',
+        'message': 'Hello Joe your order is ready',
+        'msgid': 'MGS1010101',
+        'smstype': 'text'
+    }]
+}
+
+headers = {
+    'Content-Type': 'application/json',
+    'API-KEY': api_key,
+    'USERNAME': username
+}
+
+response = requests.post('https://frogapi.wigal.com.gh/api/v3/sms/send', headers=headers, data=json.dumps(post_data))
+
+print(response.json())`
+                    },
+                    {
+                        lang: 'PHP',
+                        code: `<?php
+$apiKey = 'your_api_key_here'; // Replace with your API Key
+$username = 'your_username_here'; // Replace with your Username
+$postData = array(
+    'senderid' => 'OGK123',
+    'destinations' => array(
+        array(
+            'destination' => '0542709440',
+            'message' => 'Hello Joe your order is ready',
+            'msgid' => 'MGS1010101',
+            'smstype' => 'text'
+        )
+    )
+);
+
+$ch = curl_init('https://frogapi.wigal.com.gh/api/v3/sms/send');
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_POST, true);
+curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+    'Content-Type: application/json',
+    'API-KEY: ' . $apiKey,
+    'USERNAME: ' . $username
+));
+curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($postData));
+
+$response = curl_exec($ch);
+if(curl_errno($ch)) {
+    echo 'Error:' . curl_error($ch);
+} else {
+    echo $response;
+}
+curl_close($ch);
+?>`
+                    }
+                ];
+
+                const responseSample = [
+                    {
+                        lang: '200',
+                        code: `{
+    "status": "ACCEPTD",
+    "message": "Message Accepted For Processing"
+}`
+                    },
+                    {
+                        lang: '401',
+                        code: `{
+    "status": "UNAUTHORIZED",
+    "message": "Invalid API credentials"
+}`
+                    },
+                    {
+                        lang: '404',
+                        code: `{
+    "status": "SENDER_ID_NOT_FOUND",
+    "message": "Sender ID: 4865 is not valid",
+    "data": null
+}`
+                    },
+                    {
+                        lang: '500',
+                        code: `{
+    "status": "ERROR",
+    "message": "Internal server error"
+}`
+                    }
+                ];
+
+                const requestObjectSample = [
+                    {
+                        lang: 'JSON',
+                        code: `{
+    "senderid": "OGK123",
+    "destinations": [
+        {
+            "destination": "0542709440",
+            "message": "Hello Joe your order is ready",
+            "msgid": "MGS1010101",
+            "smstype": "text"
+        }
+    ]
+}`
+                    }
+                ];
+
+                return {
+                    main: (
+                        <>
+                            <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: 1.6 }}>
+                                Send Personalized Messages.
+                            </p>
+                            <EndpointBox method="POST" url="https://frogapi.wigal.com.gh/api/v3/sms/send" theme={theme} />
+
+                            <h2 style={{ fontSize: '1.75rem', marginBottom: '1rem', marginTop: '4rem', fontWeight: 700 }}>Request Object</h2>
+                            <ResponseTable data={[
+                                { field: 'senderid', type: 'string', description: 'The senderID used for sending message. Approved SenderIDs only' },
+                                { field: 'destination', type: 'string', description: 'Recipient Phone Number.' },
+                                { field: 'msgid', type: 'string', description: 'Your message ID.' },
+                                { field: 'message', type: 'string', description: 'The message to be sent.' },
+                                { field: 'smstype', type: 'string', description: 'The type of message to be sent. Default is text.' }
+                            ]} />
+
+                            <h2 style={{ fontSize: '1.75rem', marginBottom: '1rem', marginTop: '4rem', fontWeight: 700 }}>Response Object</h2>
+                            <ResponseTable data={[
+                                { field: 'status', type: 'string', description: 'The status of the request.' },
+                                { field: 'message', type: 'string', description: 'The message response.' }
+                            ]} />
+
+                            <h2 style={{ fontSize: '1.75rem', marginBottom: '1rem', marginTop: '4rem', fontWeight: 700 }}>Responses</h2>
+
+                            <ResponseAccordion code="200" status="ACCEPTED">
+                                <ResponseTable data={[
+                                    { field: 'status', type: 'string', description: 'Returns "ACCEPTD" when message is successfully queued' },
+                                    { field: 'message', type: 'string', description: 'Returns "Message Accepted For Processing" on success' }
+                                ]} />
+                            </ResponseAccordion>
+
+                            <ResponseAccordion code="401" status="UNAUTHORIZED" type="error">
+                                <ResponseTable data={[
+                                    { field: 'status', type: 'string', description: 'Error status code ("UNAUTHORIZED")' },
+                                    { field: 'message', type: 'string', description: 'Detailed error message explaining the issue' }
+                                ]} />
+                            </ResponseAccordion>
+
+                            <ResponseAccordion code="404" status="NOT FOUND" type="error">
+                                <ResponseTable data={[
+                                    { field: 'status', type: 'string', description: 'Error status code (e.g., "SENDER_ID_NOT_FOUND")' },
+                                    { field: 'message', type: 'string', description: 'Detailed error message explaining the issue' },
+                                    { field: 'data', type: 'null', description: 'No data returned for error responses' }
+                                ]} />
+                            </ResponseAccordion>
+
+                            <ResponseAccordion code="500" status="SERVER ERROR" type="error">
+                                <ResponseTable data={[
+                                    { field: 'status', type: 'string', description: 'Returns "ERROR" for server errors' },
+                                    { field: 'message', type: 'string', description: 'Generic error message "Internal server error"' }
+                                ]} />
+                            </ResponseAccordion>
+                        </>
+                    ),
+                    right: (
+                        <>
+                            <h2 style={{ fontSize: '1rem', marginBottom: '1rem', color: 'var(--text-primary)', fontWeight: 700 }}>Endpoint</h2>
+                            <CodeExample samples={samples} theme={theme} />
+
+                            <h2 style={{ fontSize: '1rem', marginBottom: '1rem', marginTop: '3rem', color: 'var(--text-primary)', fontWeight: 700 }}>Request Object</h2>
+                            <CodeExample samples={requestObjectSample} theme={theme} />
+
+                            <h2 style={{ fontSize: '1rem', marginBottom: '1rem', marginTop: '3rem', color: 'var(--text-primary)', fontWeight: 700 }}>Response Object</h2>
+                            <CodeExample samples={responseSample} theme={theme} />
+                        </>
+                    )
+                };
+            })()
         },
         'Generate OTP': {
-            title: 'Generate OTP',
-            body: (
-                <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: 1.6 }}>
-                    Generate One-Time Passwords (OTPs) securely using our API.
-                </p>
-            )
+            title: 'SMS OTP Generation',
+            body: (() => {
+                const samples = [
+                    {
+                        lang: 'cURL',
+                        code: `curl -X POST 'https://frogapi.wigal.com.gh/api/v3/sms/otp/generate' \\
+-H "API-KEY: your_api_key_here" \\
+-H "USERNAME: your_username_here" \\
+-d '{
+    "number": "0276128036",
+    "expiry": 1,
+    "length": 5,
+    "messagetemplate": "Hello, your OTP is : %OTPCODE%. It will expire after %EXPIRY% mins",
+    "type": "ALPHANUMERIC",
+    "senderid": "FROGy"
+}'`
+                    },
+                    {
+                        lang: 'JavaScript',
+                        code: `const apiKey = 'your_api_key_here'; // Replace with your API Key
+const username = 'your_username_here'; // Replace with your Username
+
+const postData = {
+    number: "0276128036",
+    expiry: 1,
+    length: 5,
+    messagetemplate: "Hello, your OTP is : %OTPCODE%. It will expire after %EXPIRY% mins",
+    type: "ALPHANUMERIC",
+    senderid: "FROGy"
+};
+
+fetch('https://frogapi.wigal.com.gh/api/v3/sms/otp/generate', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        'API-KEY': apiKey,
+        'USERNAME': username
+    },
+    body: JSON.stringify(postData)
+})
+.then(response => response.json())
+.then(data => {
+    console.log(data);
+})
+.catch(error => {
+    console.error('Error:', error);
+});`
+                    },
+                    {
+                        lang: 'Python',
+                        code: `import requests
+import json
+
+api_key = 'your_api_key_here' # Replace with your API Key
+username = 'your_username_here' # Replace with your Username
+
+post_data = {
+    "number": "0276128036",
+    "expiry": 1,
+    "length": 5,
+    "messagetemplate": "Hello, your OTP is : %OTPCODE%. It will expire after %EXPIRY% mins",
+    "type": "ALPHANUMERIC",
+    "senderid": "FROGy"
+}
+
+headers = {
+    'Content-Type': 'application/json',
+    'API-KEY': api_key,
+    'USERNAME': username
+}
+
+response = requests.post('https://frogapi.wigal.com.gh/api/v3/sms/otp/generate', headers=headers, data=json.dumps(post_data))
+
+print(response.json())`
+                    },
+                    {
+                        lang: 'PHP',
+                        code: `<?php
+$apiKey = 'your_api_key_here'; // Replace with your API Key
+$username = 'your_username_here'; // Replace with your Username
+
+$postData = array(
+    'number' => '0276128036',
+    'expiry' => 1,
+    'length' => 5,
+    'messagetemplate' => 'Hello, your OTP is : %OTPCODE%. It will expire after %EXPIRY% mins',
+    'type' => 'ALPHANUMERIC',
+    'senderid' => 'FROGy'
+);
+
+$ch = curl_init('https://frogapi.wigal.com.gh/api/v3/sms/otp/generate');
+
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_POST, true);
+curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+    'Content-Type: application/json',
+    'API-KEY: ' . $apiKey,
+    'USERNAME: ' . $username
+));
+
+curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($postData));
+
+$response = curl_exec($ch);
+
+if (curl_errno($ch)) {
+    echo 'Error:' . curl_error($ch);
+} else {
+    echo $response;
+}
+
+curl_close($ch);
+?>`
+                    }
+                ];
+
+                const requestObjectSample = [
+                    {
+                        lang: 'JSON',
+                        code: `{
+  "number": "0276128936",
+  "expiry": 1,
+  "length": 5,
+  "messagetemplate": "Hello, your OTP is : %OTPCODE%. It will expire after %EXPIRY% mins",
+  "type": "ALPHANUMERIC",
+  "senderid": "FROGy"
+}`
+                    }
+                ];
+
+                const responseSample = [
+                    {
+                        lang: '200',
+                        code: `{
+    "status": "SUCCESS",
+    "message": "OTP processed for delivery"
+}`
+                    },
+                    {
+                        lang: '402',
+                        code: `{
+    "status": "ERROR",
+    "message": "Insufficient balance to process request"
+}`
+                    },
+                    {
+                        lang: '404',
+                        code: `{
+    "status": "ERROR",
+    "message": "Invalid phone number format"
+}`
+                    },
+                    {
+                        lang: '422',
+                        code: `{
+    "status": "ERROR",
+    "message": "Message template must contain %OTPCODE% placeholder"
+}`
+                    },
+                    {
+                        lang: '500',
+                        code: `{
+    "status": "ERROR",
+    "message": "Internal server error"
+}`
+                    }
+                ];
+
+                return {
+                    main: (
+                        <>
+                            <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: 1.6 }}>
+                                Generate SMS OTP.
+                            </p>
+                            <EndpointBox method="POST" url="https://frogapi.wigal.com.gh/api/v3/sms/otp/generate" theme={theme} />
+
+                            <h2 style={{ fontSize: '1.75rem', marginBottom: '1rem', marginTop: '4rem', fontWeight: 700 }}>Request Object</h2>
+                            <ResponseTable data={[
+                                { field: 'number', type: 'string', description: "The recipient's phone number." },
+                                { field: 'expiry', type: 'integer', description: 'The time duration before the OTP expires.' },
+                                { field: 'length', type: 'integer', description: 'The length of the OTP code.' },
+                                { field: 'messagetemplate', type: 'string', description: 'The message template with placeholders.' },
+                                { field: 'type', type: 'string', description: 'Type of OTP (NUMERIC/ALPHA/ALPHANUMERIC).' },
+                                { field: 'senderid', type: 'string', description: 'Approved Sender ID.' }
+                            ]} />
+
+                            <h2 style={{ fontSize: '1.75rem', marginBottom: '1rem', marginTop: '4rem', fontWeight: 700 }}>Placeholders</h2>
+                            <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: 1.6, marginBottom: '1.5rem' }}>
+                                Available placeholders: <code style={{ color: 'var(--brand-green)' }}>%EXPIRY%</code>, <code style={{ color: 'var(--brand-green)' }}>%OTPCODE%</code>, <code style={{ color: 'var(--brand-green)' }}>%SERVICE%</code>, <code style={{ color: 'var(--brand-green)' }}>%LENGTH%</code>, <code style={{ color: 'var(--brand-green)' }}>%TYPE%</code>.
+                            </p>
+                            <ResponseTable data={[
+                                { field: '%EXPIRY%', type: 'string', description: 'Expiry time in minutes' },
+                                { field: '%OTPCODE%', type: 'string', description: 'Generated OTP code' },
+                                { field: '%SERVICE%', type: 'string', description: 'Service/Application name' },
+                                { field: '%LENGTH%', type: 'string', description: 'OTP code length' },
+                                { field: '%TYPE%', type: 'string', description: 'OTP code type' }
+                            ]} />
+
+                            <h2 style={{ fontSize: '1.75rem', marginBottom: '1rem', marginTop: '4rem', fontWeight: 700 }}>Responses</h2>
+
+                            <ResponseAccordion code="200" status="OK">
+                                <ResponseTable data={[
+                                    { field: 'status', type: 'string', description: 'Returns "SUCCESS" when OTP is generated' },
+                                    { field: 'message', type: 'string', description: 'Confirmation message' }
+                                ]} />
+                            </ResponseAccordion>
+
+                            <ResponseAccordion code="402" status="PAYMENT REQUIRED" type="error">
+                                <ResponseTable data={[
+                                    { field: 'status', type: 'string', description: 'Error status ("ERROR")' },
+                                    { field: 'message', type: 'string', description: 'Error description ("Insufficient Balance")' }
+                                ]} />
+                            </ResponseAccordion>
+
+                            <ResponseAccordion code="404" status="NOT FOUND" type="error">
+                                <ResponseTable data={[
+                                    { field: 'status', type: 'string', description: 'Error status code' },
+                                    { field: 'message', type: 'string', description: 'Error description' }
+                                ]} />
+                            </ResponseAccordion>
+
+                            <ResponseAccordion code="422" status="UNPROCESSABLE ENTITY" type="error">
+                                <ResponseTable data={[
+                                    { field: 'status', type: 'string', description: 'Error status code ("ERROR")' },
+                                    { field: 'message', type: 'string', description: 'Error description ("Message template must contain %OTPCODE% placeholder")' }
+                                ]} />
+                            </ResponseAccordion>
+
+                            <ResponseAccordion code="500" status="SERVER ERROR" type="error">
+                                <ResponseTable data={[
+                                    { field: 'status', type: 'string', description: 'Server error status' },
+                                    { field: 'message', type: 'string', description: 'Internal server error message' }
+                                ]} />
+                            </ResponseAccordion>
+                        </>
+                    ),
+                    right: (
+                        <>
+                            <h2 style={{ fontSize: '1rem', marginBottom: '1rem', color: 'var(--text-primary)', fontWeight: 700 }}>Endpoint</h2>
+                            <CodeExample samples={samples} theme={theme} />
+
+                            <h2 style={{ fontSize: '1rem', marginBottom: '1rem', marginTop: '3rem', color: 'var(--text-primary)', fontWeight: 700 }}>Request Object</h2>
+                            <CodeExample samples={requestObjectSample} theme={theme} />
+
+                            <h2 style={{ fontSize: '1rem', marginBottom: '1rem', marginTop: '3rem', color: 'var(--text-primary)', fontWeight: 700 }}>Response Object</h2>
+                            <CodeExample samples={responseSample} theme={theme} />
+                        </>
+                    )
+                };
+            })()
         },
-        'Verify': {
-            title: 'Verify OTP',
-            body: (
-                <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: 1.6 }}>
-                    Verify the OTPs sent to your users to complete the authentication process.
-                </p>
-            )
+        'Verify OTP': {
+            title: 'SMS OTP Verification',
+            body: (() => {
+                const samples = [
+                    {
+                        lang: 'cURL',
+                        code: `curl -X POST 'https://frogapi.wigal.com.gh/api/v3/sms/otp/verify' \\
+-H "API-KEY: your_api_key_here" \\
+-H "USERNAME: your_username_here" \\
+-d '{
+    "otpcode": "otp_code_here",
+    "number": "recipient_phone_number"
+}'`
+                    },
+                    {
+                        lang: 'JavaScript',
+                        code: `const apiKey = 'your_api_key_here'; // Replace with your API Key
+const username = 'your_username_here'; // Replace with your Username
+
+const postData = {
+    otpcode: 'otp_code_here',
+    number: 'recipient_phone_number'
+};
+
+fetch('https://frogapi.wigal.com.gh/api/v3/sms/otp/verify', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        'API-KEY': apiKey,
+        'USERNAME': username
+    },
+    body: JSON.stringify(postData)
+})
+.then(response => response.json())
+.then(data => {
+    console.log(data);
+})
+.catch(error => {
+    console.error('Error:', error);
+});`
+                    },
+                    {
+                        lang: 'Python',
+                        code: `import requests
+import json
+
+api_key = 'your_api_key_here' # Replace with your API Key
+username = 'your_username_here' # Replace with your Username
+
+post_data = {
+    'otpcode': 'otp_code_here',
+    'number': 'recipient_phone_number'
+}
+
+headers = {
+    'Content-Type': 'application/json',
+    'API-KEY': api_key,
+    'USERNAME': username
+}
+
+response = requests.post('https://frogapi.wigal.com.gh/api/v3/sms/otp/verify', headers=headers, data=json.dumps(post_data))
+
+print(response.json())`
+                    },
+                    {
+                        lang: 'PHP',
+                        code: `<?php
+$apiKey = 'your_api_key_here'; // Replace with your API Key
+$username = 'your_username_here'; // Replace with your Username
+
+$postData = array(
+    'otpcode' => 'otp_code_here',
+    'number' => 'recipient_phone_number'
+);
+
+$ch = curl_init('https://frogapi.wigal.com.gh/api/v3/sms/otp/verify');
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_POST, true);
+curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+    'Content-Type: application/json',
+    'API-KEY: ' . $apiKey,
+    'USERNAME: ' . $username
+));
+curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($postData));
+
+$response = curl_exec($ch);
+if(curl_errno($ch)) {
+    echo 'Error:' . curl_error($ch);
+} else {
+    echo $response;
+}
+curl_close($ch);
+?>`
+                    }
+                ];
+
+                const requestObjectSample = [
+                    {
+                        lang: 'JSON',
+                        code: `{
+  "otpcode": "8a2b3",
+  "number": "0276128936"
+}`
+                    }
+                ];
+
+                return {
+                    main: (
+                        <>
+                            <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: 1.6 }}>
+                                Verify SMS OTP code.
+                            </p>
+                            <EndpointBox method="POST" url="https://frogapi.wigal.com.gh/api/v3/sms/otp/verify" theme={theme} />
+
+                            <h2 style={{ fontSize: '1.75rem', marginBottom: '1rem', marginTop: '4rem', fontWeight: 700 }}>Request Object</h2>
+                            <ResponseTable data={[
+                                { field: 'otpcode', type: 'string', description: 'The OTP code to be verified.' },
+                                { field: 'number', type: 'string', description: "The recipient's phone number." }
+                            ]} />
+
+                            <h2 style={{ fontSize: '1.75rem', marginBottom: '1rem', marginTop: '4rem', fontWeight: 700 }}>Response Object</h2>
+                            <ResponseTable data={[
+                                { field: 'status', type: 'string', description: 'The status of the request.' },
+                                { field: 'message', type: 'string', description: 'The message response.' }
+                            ]} />
+
+                            <h2 style={{ fontSize: '1.75rem', marginBottom: '1rem', marginTop: '4rem', fontWeight: 700 }}>Responses</h2>
+
+                            <ResponseAccordion code="200" status="OK">
+                                <ResponseTable data={[
+                                    { field: 'status', type: 'string', description: 'Verification success status' },
+                                    { field: 'message', type: 'string', description: 'Confirmation message' }
+                                ]} />
+                            </ResponseAccordion>
+
+                            <ResponseAccordion code="400" status="BAD REQUEST" type="error">
+                                <ResponseTable data={[
+                                    { field: 'status', type: 'string', description: 'Status Message ("ERROR")' },
+                                    { field: 'message', type: 'string', description: 'Error description ("Missing required fields")' }
+                                ]} />
+                            </ResponseAccordion>
+
+                            <ResponseAccordion code="404" status="NOT FOUND" type="error">
+                                <ResponseTable data={[
+                                    { field: 'status', type: 'string', description: 'Verification error status' },
+                                    { field: 'message', type: 'string', description: 'Error description' }
+                                ]} />
+                            </ResponseAccordion>
+
+                            <ResponseAccordion code="408" status="REQUEST TIMEOUT" type="error">
+                                <ResponseTable data={[
+                                    { field: 'status', type: 'string', description: 'Status Message ("ERROR")' },
+                                    { field: 'message', type: 'string', description: 'Error description ("OTP code has expired")' }
+                                ]} />
+                            </ResponseAccordion>
+
+                            <ResponseAccordion code="500" status="SERVER ERROR" type="error">
+                                <ResponseTable data={[
+                                    { field: 'status', type: 'string', description: 'Server error status' },
+                                    { field: 'message', type: 'string', description: 'Internal server error message' }
+                                ]} />
+                            </ResponseAccordion>
+                        </>
+                    ),
+                    right: (
+                        <>
+                            <h2 style={{ fontSize: '1rem', marginBottom: '1rem', color: 'var(--text-primary)', fontWeight: 700 }}>Endpoint</h2>
+                            <CodeExample samples={samples} theme={theme} />
+
+                            <h2 style={{ fontSize: '1rem', marginBottom: '1rem', marginTop: '3rem', color: 'var(--text-primary)', fontWeight: 700 }}>Request Object</h2>
+                            <CodeExample samples={requestObjectSample} theme={theme} />
+                        </>
+                    )
+                };
+            })()
         }
     };
 
