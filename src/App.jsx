@@ -393,7 +393,17 @@ const SEND_VOICE_INTERACTIVE_KEY = 'Send voice interactive';
 function App() {
     const [activeTab, setActiveTab] = useState('Introduction');
     const [activeSidebarItem, setActiveSidebarItem] = useState('Starting with frog');
-    const [theme, setTheme] = useState('dark');
+    const [theme, setTheme] = useState(() => {
+        if (typeof window === 'undefined') return 'dark';
+        try {
+            const stored = window.localStorage.getItem('frog-docs-theme');
+            if (stored === 'light' || stored === 'dark') return stored;
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            return prefersDark ? 'dark' : 'light';
+        } catch {
+            return 'dark';
+        }
+    });
     const [searchQuery, setSearchQuery] = useState('');
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -440,6 +450,11 @@ function App() {
 
     useEffect(() => {
         document.documentElement.setAttribute('data-theme', theme);
+        try {
+            window.localStorage.setItem('frog-docs-theme', theme);
+        } catch {
+            // ignore storage errors
+        }
     }, [theme]);
 
     useEffect(() => {
