@@ -62,6 +62,119 @@ const EndpointBox = ({ method, url, theme }) => {
     );
 };
 
+const FormatBox = ({ text, theme }) => {
+    const [copied, setCopied] = React.useState(false);
+    const isDark = theme === 'dark';
+
+    const copyToClipboard = () => {
+        navigator.clipboard.writeText(text);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
+
+    return (
+        <div style={{
+            background: isDark ? '#111' : '#f8fafc',
+            borderRadius: '12px',
+            padding: '0.75rem 1rem',
+            marginTop: '1.5rem',
+            border: `1px solid ${isDark ? 'var(--border-color)' : '#e2e8f0'}`,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '1rem',
+            position: 'relative',
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: '0.9rem'
+        }}>
+            <span style={{ color: '#EE82EE', wordBreak: 'break-all', flex: 1 }}>
+                {text}
+            </span>
+            <button
+                onClick={copyToClipboard}
+                style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: copied ? '#008A45' : (isDark ? 'var(--text-secondary)' : '#64748b'),
+                    cursor: 'pointer',
+                    padding: '4px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    transition: 'color 0.2s',
+                    flexShrink: 0
+                }}
+                title="Copy to clipboard"
+            >
+                {copied ? <Check size={16} /> : <Copy size={16} />}
+            </button>
+        </div>
+    );
+};
+
+const CodeBlockWithCopy = ({ code, language = 'php', label, theme }) => {
+    const [copied, setCopied] = React.useState(false);
+    const isDark = theme === 'dark';
+
+    const copyToClipboard = () => {
+        navigator.clipboard.writeText(code);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
+
+    return (
+        <div style={{
+            background: isDark ? '#0a0a0a' : '#ffffff',
+            borderRadius: '16px',
+            border: `1px solid ${isDark ? 'var(--border-color)' : '#e2e8f0'}`,
+            overflow: 'hidden',
+            marginBottom: '2rem',
+            marginTop: '1rem'
+        }}>
+            <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '0.75rem 1.5rem',
+                borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.05)' : '#e2e8f0'}`,
+                background: isDark ? 'rgba(255,255,255,0.02)' : '#f8fafc',
+                fontSize: '0.8rem',
+                fontWeight: 600,
+                color: 'var(--text-secondary)'
+            }}>
+                <span>{label}</span>
+                <button
+                    onClick={copyToClipboard}
+                    style={{
+                        background: 'transparent',
+                        border: 'none',
+                        color: copied ? 'var(--brand-green)' : (isDark ? 'var(--text-secondary)' : '#64748b'),
+                        cursor: 'pointer',
+                        padding: '4px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        transition: 'color 0.2s'
+                    }}
+                    title="Copy code"
+                >
+                    {copied ? <Check size={16} /> : <Copy size={16} />}
+                </button>
+            </div>
+            <SyntaxHighlighter
+                language={language}
+                style={vscDarkPlus}
+                customStyle={{
+                    margin: 0,
+                    padding: '1.5rem',
+                    background: isDark ? '#0a0a0a' : '#ffffff',
+                    fontSize: '0.9rem',
+                    lineHeight: 1.6
+                }}
+            >
+                {code}
+            </SyntaxHighlighter>
+        </div>
+    );
+};
+
 const ResponseTable = ({ data, showType = true }) => {
     return (
         <div style={{ marginTop: '3rem', overflowX: 'auto' }}>
@@ -316,8 +429,8 @@ function App() {
         ],
         'Smart USSD': [
             {
-                title: 'USSD Flows',
-                items: ['Build Flow', 'Simulator', 'Live View']
+                title: 'Smart USSD',
+                items: [{ name: 'Introduction', key: 'Smart USSD Introduction' }, 'Smart USSD V1', 'Smart USSD V2']
             }
         ]
     };
@@ -359,7 +472,8 @@ function App() {
         groups.flatMap(group =>
             group.items.map(item => ({
                 tab,
-                name: typeof item === 'object' ? item.name : item,
+                name: typeof item === 'object' ? item.key : item,
+                displayName: typeof item === 'object' ? item.name : item,
                 group: group.title
             }))
         )
@@ -367,7 +481,7 @@ function App() {
 
     const filteredResults = searchQuery.trim() === '' ? [] :
         allPages.filter(page =>
-            page.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (page.displayName || page.name).toLowerCase().includes(searchQuery.toLowerCase()) ||
             page.group.toLowerCase().includes(searchQuery.toLowerCase())
         );
 
@@ -3234,6 +3348,495 @@ curl_close($ch);
                 );
             })()
         },
+        'Smart USSD Introduction': {
+            title: 'Introduction',
+            body: (
+                <>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: 1.6 }}>
+                        Introduction to Smart USSD.
+                    </p>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: 1.6, marginTop: '1rem' }}>
+                        USSD is a versatile and widely accessible mobile technology, offering a fast and reliable way to communicate between users and client applications. It does not rely on a specific device and requires no activation, ensuring ease of use for everyone.
+                    </p>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: 1.6, marginTop: '1rem' }}>
+                        The USSD session begins when a user dials a code, such as <span style={{ color: 'var(--brand-green)', fontWeight: 600 }}>*800*2#</span>, from their mobile phone. This process is similar to the action of checking your airtime or data balance.
+                    </p>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: 1.6, marginTop: '1rem' }}>
+                        With Frog's USSD API, developers can easily integrate and manage USSD requests once the account is set up. The API offers the flexibility to design and deploy applications that meet the unique needs of any business, making the process both efficient and adaptable.
+                    </p>
+                    <h2 style={{ fontSize: '1.75rem', marginBottom: '1rem', marginTop: '3rem', color: 'var(--text-primary)', fontWeight: 700 }}>Why is USSD Preferred</h2>
+                    <ul style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: 1.8, marginTop: '0.5rem', paddingLeft: '1.5rem' }}>
+                        <li style={{ marginBottom: '0.5rem' }}>It is accessible on all cellular networks and mobile handsets.</li>
+                        <li style={{ marginBottom: '0.5rem' }}>It can be easily used in collecting customer feedback.</li>
+                        <li style={{ marginBottom: '0.5rem' }}>It can be applied during polls for voting in real-time.</li>
+                        <li style={{ marginBottom: '0.5rem' }}>Very useful for Financial Services such as Mobile Banking and Balance Enquiry.</li>
+                        <li style={{ marginBottom: '0.5rem' }}>It can be used for Two-factor authentication.</li>
+                    </ul>
+                    <h2 style={{ fontSize: '1.75rem', marginBottom: '1rem', marginTop: '3rem', color: 'var(--text-primary)', fontWeight: 700 }}>How it Works</h2>
+                    <img src="/images/Flow_zf3bze.png" alt="WIGAL USSD Gateway flow: Phone dials USSD code to Gateway, Gateway sends client request to your application, application responds, Gateway sends USSD menu to phone" style={{ maxWidth: '100%', marginTop: '1rem', display: 'block', borderRadius: '12px' }} />
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: 1.6, marginTop: '1.5rem' }}>
+                        Frog USSD initiates a request with a <span style={{ color: '#D63333', fontWeight: 600 }}>newSession</span> value set to <span style={{ color: '#D63333', fontWeight: 600 }}>true</span> to the URL provided during the setup.
+                    </p>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: 1.6, marginTop: '1rem' }}>
+                        You process the data and return a response in JSON format to Frog Bulk SMS, which will be displayed to the user. Set <span style={{ color: '#D63333', fontWeight: 600 }}>continueSession</span> to <span style={{ color: '#D63333', fontWeight: 600 }}>true</span> if the session is expected to continue or <span style={{ color: '#D63333', fontWeight: 600 }}>false</span> to close the session.
+                    </p>
+                </>
+            )
+        },
+        'Smart USSD V1': {
+            title: 'Smart USSD V1',
+            body: (
+                <>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: 1.6 }}>
+                        This Document gives detailed information on how to integrate with the Smart USSD via the API services. It also serves USSD content providers who wish to serve USSD menus for end-users connected to the networks configured on this system.
+                    </p>
+                    <TipBox theme={theme}>
+                        <strong>NB:</strong> The Smart USSD service is available on all the Telecommunication Networks in Ghana
+                    </TipBox>
+                    <h2 style={{ fontSize: '1.75rem', marginBottom: '1rem', marginTop: '3rem', color: 'var(--text-primary)', fontWeight: 700 }}>Smart USSD HTTP API</h2>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: 1.6, marginTop: '0.5rem' }}>
+                        The Smart USSD HTTP API requires content providers (Developers) to provide a URL that accepts the following parameters using the GET method:
+                    </p>
+                    <TipBox theme={theme}>
+                        <strong>NB:</strong> All parameters are strings.
+                    </TipBox>
+                    <h2 style={{ fontSize: '1.75rem', marginBottom: '1rem', marginTop: '3rem', color: 'var(--text-primary)', fontWeight: 700 }}>Parameters For USSD API</h2>
+                    <div style={{ marginTop: '1rem', overflowX: 'auto' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                            <thead>
+                                <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                                    <th style={{ padding: '1rem 0.5rem', fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-primary)' }}>PARAMETER</th>
+                                    <th style={{ padding: '1rem 0.5rem', fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-primary)' }}>TYPE</th>
+                                    <th style={{ padding: '1rem 0.5rem', fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-primary)' }}>POSITION</th>
+                                    <th style={{ padding: '1rem 0.5rem', fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-primary)' }}>REQUIRED</th>
+                                    <th style={{ padding: '1rem 0.5rem', fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-primary)' }}>DESCRIPTION</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                                    <td style={{ padding: '1rem 0.5rem', verticalAlign: 'top' }}><code style={{ color: '#e67e22', fontWeight: 600, fontSize: '0.9rem' }}>network</code></td>
+                                    <td style={{ padding: '1rem 0.5rem', verticalAlign: 'top' }}><code style={{ color: '#8e44ad', fontSize: '0.85rem' }}>STRING</code></td>
+                                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>1</td>
+                                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>YES</td>
+                                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.5 }}>The network from which the traffic originated. This will always be provided by WIGAL and must be returned as it is, in the response string.</td>
+                                </tr>
+                                <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                                    <td style={{ padding: '1rem 0.5rem', verticalAlign: 'top' }}><code style={{ color: '#e67e22', fontWeight: 600, fontSize: '0.9rem' }}>sessionid</code></td>
+                                    <td style={{ padding: '1rem 0.5rem', verticalAlign: 'top' }}><code style={{ color: '#8e44ad', fontSize: '0.85rem' }}>STRING</code></td>
+                                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>4</td>
+                                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>YES</td>
+                                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.5 }}>The unique string that identifies each session the end-user starts. This will always be provided by WIGAL and must be returned as it is, in the response string.</td>
+                                </tr>
+                                <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                                    <td style={{ padding: '1rem 0.5rem', verticalAlign: 'top' }}><code style={{ color: '#e67e22', fontWeight: 600, fontSize: '0.9rem' }}>mode</code></td>
+                                    <td style={{ padding: '1rem 0.5rem', verticalAlign: 'top' }}><code style={{ color: '#8e44ad', fontSize: '0.85rem' }}>STRING</code></td>
+                                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>2</td>
+                                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>YES</td>
+                                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.5 }}>This is used to determine if you require an input from the end-user or not. The below are the specific mode needed in CAPITAL LETTERS. START (New session) MORE (Require input) END (Close session).</td>
+                                </tr>
+                                <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                                    <td style={{ padding: '1rem 0.5rem', verticalAlign: 'top' }}><code style={{ color: '#e67e22', fontWeight: 600, fontSize: '0.9rem' }}>msisdn</code></td>
+                                    <td style={{ padding: '1rem 0.5rem', verticalAlign: 'top' }}><code style={{ color: '#8e44ad', fontSize: '0.85rem' }}>STRING</code></td>
+                                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>3</td>
+                                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>YES</td>
+                                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.5 }}>Phone number of the end-user. This will always be provided by WIGAL and must be returned as it is, in the response string.</td>
+                                </tr>
+                                <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                                    <td style={{ padding: '1rem 0.5rem', verticalAlign: 'top' }}><code style={{ color: '#e67e22', fontWeight: 600, fontSize: '0.9rem' }}>userdata</code></td>
+                                    <td style={{ padding: '1rem 0.5rem', verticalAlign: 'top' }}><code style={{ color: '#8e44ad', fontSize: '0.85rem' }}>STRING</code></td>
+                                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>5</td>
+                                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>YES</td>
+                                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.5 }}>Data from the end-user or Data from Content Providers. This must be provided by the Content Provider.</td>
+                                </tr>
+                                <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                                    <td style={{ padding: '1rem 0.5rem', verticalAlign: 'top' }}><code style={{ color: '#e67e22', fontWeight: 600, fontSize: '0.9rem' }}>username</code></td>
+                                    <td style={{ padding: '1rem 0.5rem', verticalAlign: 'top' }}><code style={{ color: '#8e44ad', fontSize: '0.85rem' }}>STRING</code></td>
+                                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>6</td>
+                                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>YES</td>
+                                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.5 }}>Your username registered with WIGAL. This will always be provided by WIGAL and must be returned as it is, in the response string.</td>
+                                </tr>
+                                <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                                    <td style={{ padding: '1rem 0.5rem', verticalAlign: 'top' }}><code style={{ color: '#e67e22', fontWeight: 600, fontSize: '0.9rem' }}>trafficid</code></td>
+                                    <td style={{ padding: '1rem 0.5rem', verticalAlign: 'top' }}><code style={{ color: '#8e44ad', fontSize: '0.85rem' }}>STRING</code></td>
+                                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>7</td>
+                                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>YES</td>
+                                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.5 }}>Uniquely identifies every traffic even if from the same session. This will always be provided by WIGAL and must be returned as it is, in the response string.</td>
+                                </tr>
+                                <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                                    <td style={{ padding: '1rem 0.5rem', verticalAlign: 'top' }}><code style={{ color: '#e67e22', fontWeight: 600, fontSize: '0.9rem' }}>other</code></td>
+                                    <td style={{ padding: '1rem 0.5rem', verticalAlign: 'top' }}><code style={{ color: '#8e44ad', fontSize: '0.85rem' }}>STRING</code></td>
+                                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>8</td>
+                                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>NO</td>
+                                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.5 }}>Optional reference data by Third-Party. Parameter will be returned in the next request same as provided by third-party.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <TipBox theme={theme}>
+                        <strong>Note:</strong> START always begins the session of the USSD.
+                    </TipBox>
+                    <h2 style={{ fontSize: '1.75rem', marginBottom: '1rem', marginTop: '3rem', color: 'var(--text-primary)', fontWeight: 700 }}>Expected Response from Content Providers</h2>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: 1.6, marginTop: '0.5rem' }}>
+                        Wigal USSD API expects response from content provider as a string delimited by the pipe character "|". The fields expected are detailed below followed by an example string in the required format: The "^" Character is used as a newline indicator.
+                    </p>
+                    <FormatBox text="NETWORK|MODE|MSISDN|SESSIONID|USERDATA|USERNAME|TRAFFICID|OTHER" theme={theme} />
+                    <FormatBox text="WIGAL_MTN_GH|MORE|233276128036|10981013|Welcome:^1.Ringtones^2.Lifestyle^3.News|wigal|adc62161-05b2-4af5-98b1-a66c67f85c9d|first_menu" theme={theme} />
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: 1.6, marginTop: '1.5rem' }}>
+                        To display content on separate lines for a menu, the ^ character can be used as above. The above will achieve the menu displayed as below:
+                    </p>
+                    <div style={{
+                        background: theme === 'dark' ? '#111' : '#f8fafc',
+                        border: `1px solid ${theme === 'dark' ? 'var(--border-color)' : '#e2e8f0'}`,
+                        borderRadius: '12px',
+                        padding: '1rem 1.25rem',
+                        marginTop: '1rem',
+                        fontFamily: "'JetBrains Mono', monospace",
+                        fontSize: '0.9rem',
+                        color: 'var(--text-secondary)',
+                        lineHeight: 1.8,
+                        whiteSpace: 'pre-wrap'
+                    }}>
+                        Welcome:{'\n\n'}Ringtones{'\n'}Lifestyle{'\n'}News
+                    </div>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: 1.6, marginTop: '1.5rem' }}>
+                        Without the ^ character, the menu displayed will be as below:
+                    </p>
+                    <div style={{
+                        background: theme === 'dark' ? '#111' : '#f8fafc',
+                        border: `1px solid ${theme === 'dark' ? 'var(--border-color)' : '#e2e8f0'}`,
+                        borderRadius: '12px',
+                        padding: '1rem 1.25rem',
+                        marginTop: '1rem',
+                        fontFamily: "'JetBrains Mono', monospace",
+                        fontSize: '0.9rem',
+                        color: 'var(--text-secondary)',
+                        lineHeight: 1.8
+                    }}>
+                        Welcome: 1.Ringtones 2.Lifestyle 3.News
+                    </div>
+                    <TipBox theme={theme}>
+                        <strong>NB:</strong> The maximum number of characters that can be displayed on a page must not be more than 160 Characters including White Spaces. If this condition is not met, the message will be truncated and will not display the whole message. Also note that special characters like $&lt;&quot; must not be part of the USERDATA passed, as this will not allow the USSD menus to be displayed.
+                    </TipBox>
+                    <h2 style={{ fontSize: '1.75rem', marginBottom: '1rem', marginTop: '3rem', color: 'var(--text-primary)', fontWeight: 700 }}>Example Service Request</h2>
+                    <div style={{
+                        background: theme === 'dark' ? '#111' : '#f8fafc',
+                        borderRadius: '12px',
+                        padding: '0.75rem 1rem',
+                        marginTop: '1.5rem',
+                        border: `1px solid ${theme === 'dark' ? 'var(--border-color)' : '#e2e8f0'}`,
+                        fontFamily: "'JetBrains Mono', monospace",
+                        fontSize: '0.9rem',
+                        color: 'var(--text-secondary)',
+                        lineHeight: 1.6,
+                        whiteSpace: 'pre-wrap',
+                        wordBreak: 'break-all'
+                    }}>
+{`https://192.168.10.12/service.php?
+network=wigal_mtn_gh&sessionid=12345&
+mode=start&msisdn=233276128036&
+userdata=&username=wigal&
+trafficid=adc62161-05b2-4af5-98b1-a66c67f85c9d&
+other=first_menu`}
+                    </div>
+                    <FormatBox text="wigal_mtn_gh|MORE|233276128036|12345|Welcome:^1.Ringtones^2.Lifestyle^3.News|wigal|adc62161-05b2-4af5-98b1-a66c67f85c9d|1" theme={theme} />
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: 1.6, marginTop: '1.5rem' }}>
+                        WIGAL SMART USSD API receives the response and parse the request, and depending on that particular network setups, it generates an appropriate network response in protocols such as SMPP, SOAP, SS7, etc. and send to the respective network operator.
+                    </p>
+                    <h3 style={{ fontSize: '1.3rem', marginBottom: '1rem', marginTop: '2rem', color: 'var(--text-primary)', fontWeight: 600 }}>End-User receives USSD Response on Phone as below:</h3>
+                    <div style={{
+                        background: theme === 'dark' ? '#111' : '#f8fafc',
+                        border: `1px solid ${theme === 'dark' ? 'var(--border-color)' : '#e2e8f0'}`,
+                        borderRadius: '12px',
+                        padding: '1rem 1.25rem',
+                        marginTop: '1rem',
+                        fontFamily: "'JetBrains Mono', monospace",
+                        fontSize: '0.9rem',
+                        color: 'var(--text-secondary)',
+                        lineHeight: 1.8
+                    }}>
+                        Welcome: 1.Ringtones 2.Lifestyle 3.News
+                    </div>
+                    <TipBox theme={theme}>
+                        <strong>NB:</strong> Developers Example in PHP — Get a complete sample PHP script with it&apos;s Database structure on our Github page here: <a href="https://github.com/wigalgh/smartussd_api" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--brand-green)', textDecoration: 'none', fontWeight: 600 }}>Github Repo</a>
+                    </TipBox>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: 1.6, marginTop: '2rem' }}>
+                        Below is a sample PHP script:
+                    </p>
+                    <CodeBlockWithCopy
+                        label="service.php"
+                        language="php"
+                        theme={theme}
+                        code={`$MSISDN = $_GET['msisdn'];
+$SESSION_ID = $_GET['sessionid'];
+$NETWORKID = $_GET['network'];
+$MODE = $_GET['mode'];
+$DATA = $_GET['userdata'];
+$USERNAME = $_GET['username'];
+$TRAFFIC_ID = $_GET['trafficid'];
+$OTHER = $_GET['other'];
+$RESPONSE_DATA = "";
+
+// STEP ONE CHECK IF IT'S START OF SESSION
+if ($MODE == "start") {
+    $RESPONSE_DATA = "$NETWORKID|MORE|$MSISDN|$SESSION_ID|Welcome to Bank Mobile^Select Service^1.Balance Enquiry^2.Pin Reset|$USERNAME|$TRAFFIC_ID|$OTHER";
+} else {
+    if ($DATA == "1")
+        $RESPONSE_DATA = "$NETWORKID|END|$MSISDN|$SESSION_ID|Your balance enquiry is being processed. You will receive a reply shortly|$USERNAME|$TRAFFIC_ID|$OTHER";
+
+    if ($DATA == "2")
+        $RESPONSE_DATA = "$NETWORKID|END|$MSISDN|$SESSION_ID|A default pin will be sent to you shortly.|$USERNAME|$TRAFFIC_ID|$OTHER";
+}
+echo $RESPONSE_DATA;`}
+                    />
+                </>
+            )
+        },
+        'Smart USSD V2': {
+            title: 'Smart USSD V2',
+            body: (
+                <>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: 1.6 }}>
+                        This is the upgraded version of the SmartUSSD API documentation which uses the JSON response. This document gives detailed information on how to integrate with the Smart USSD Version 2 via the JSON API services. It also serves USSD content providers who wish to serve USSD menus for end-users connected to the networks configured on this system.
+                    </p>
+                    <TipBox theme={theme}>
+                        <strong>NB:</strong> The Smart USSD service is available on all the Telecommunication Networks in Ghana.
+                    </TipBox>
+                    <h2 style={{ fontSize: '1.75rem', marginBottom: '1rem', marginTop: '3rem', color: 'var(--text-primary)', fontWeight: 700 }}>SMART USSD JSON API</h2>
+                    <h3 style={{ fontSize: '1.3rem', marginBottom: '1rem', marginTop: '2rem', color: 'var(--text-primary)', fontWeight: 600 }}>Instructions</h3>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: 1.6, marginTop: '0.5rem' }}>
+                        The Smart USSD JSON API requires content providers (Developers) to provide a URL that accepts the following parameters using the POST method:
+                    </p>
+                    <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem', marginTop: '2rem', color: 'var(--text-primary)', fontWeight: 600 }}>Endpoint: POST</h3>
+                    <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem', marginTop: '1.5rem', color: 'var(--text-primary)', fontWeight: 600 }}>Header Data</h3>
+                    <h2 style={{ fontSize: '1.75rem', marginBottom: '1rem', marginTop: '3rem', color: 'var(--text-primary)', fontWeight: 700 }}>Parameters For USSD API</h2>
+                    <div style={{ marginTop: '1rem', overflowX: 'auto' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                            <thead>
+                                <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                                    <th style={{ padding: '1rem 0.5rem', fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-primary)' }}>FIELD/PARAMETERS</th>
+                                    <th style={{ padding: '1rem 0.5rem', fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-primary)' }}>VALUE</th>
+                                    <th style={{ padding: '1rem 0.5rem', fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-primary)' }}>REQUIRED</th>
+                                    <th style={{ padding: '1rem 0.5rem', fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-primary)' }}>DESCRIPTION</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                                    <td style={{ padding: '1rem 0.5rem', verticalAlign: 'top' }}><code style={{ color: '#e67e22', fontWeight: 600, fontSize: '0.9rem' }}>Content-Type</code></td>
+                                    <td style={{ padding: '1rem 0.5rem', verticalAlign: 'top' }}><code style={{ color: '#8e44ad', fontSize: '0.85rem' }}>application/json; charset=UTF-8</code></td>
+                                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>YES</td>
+                                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.5 }}>This is needed to encode to UTF-8.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <h2 style={{ fontSize: '1.75rem', marginBottom: '1rem', marginTop: '3rem', color: 'var(--text-primary)', fontWeight: 700 }}>Payload description</h2>
+                    <TipBox theme={theme}>
+                        <strong>NB:</strong> All parameters must be JSON.
+                    </TipBox>
+                    <div style={{ marginTop: '1rem', overflowX: 'auto' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                            <thead>
+                                <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                                    <th style={{ padding: '1rem 0.5rem', fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-primary)' }}>PARAMETER</th>
+                                    <th style={{ padding: '1rem 0.5rem', fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-primary)' }}>TYPE</th>
+                                    <th style={{ padding: '1rem 0.5rem', fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-primary)' }}>POSITION</th>
+                                    <th style={{ padding: '1rem 0.5rem', fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-primary)' }}>REQUIRED</th>
+                                    <th style={{ padding: '1rem 0.5rem', fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-primary)' }}>DESCRIPTION</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                                    <td style={{ padding: '1rem 0.5rem', verticalAlign: 'top' }}><code style={{ color: '#e67e22', fontWeight: 600, fontSize: '0.9rem' }}>network</code></td>
+                                    <td style={{ padding: '1rem 0.5rem', verticalAlign: 'top' }}><code style={{ color: '#8e44ad', fontSize: '0.85rem' }}>STRING</code></td>
+                                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>1</td>
+                                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>YES</td>
+                                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.5 }}>The network from which the traffic originated. This will always be provided by WIGAL and must be returned as it is, in the response string.</td>
+                                </tr>
+                                <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                                    <td style={{ padding: '1rem 0.5rem', verticalAlign: 'top' }}><code style={{ color: '#e67e22', fontWeight: 600, fontSize: '0.9rem' }}>sessionid</code></td>
+                                    <td style={{ padding: '1rem 0.5rem', verticalAlign: 'top' }}><code style={{ color: '#8e44ad', fontSize: '0.85rem' }}>STRING</code></td>
+                                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>4</td>
+                                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>YES</td>
+                                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.5 }}>The unique string that identifies each session the end-user starts. This will always be provided by WIGAL and must be returned as it is, in the response string.</td>
+                                </tr>
+                                <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                                    <td style={{ padding: '1rem 0.5rem', verticalAlign: 'top' }}><code style={{ color: '#e67e22', fontWeight: 600, fontSize: '0.9rem' }}>mode</code></td>
+                                    <td style={{ padding: '1rem 0.5rem', verticalAlign: 'top' }}><code style={{ color: '#8e44ad', fontSize: '0.85rem' }}>STRING</code></td>
+                                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>2</td>
+                                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>YES</td>
+                                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.5 }}>This is used to determine if you require an input from the end-user or not. The below are the specific mode needed in CAPITAL LETTERS. START (New session) MORE (Require input) END (Close session).</td>
+                                </tr>
+                                <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                                    <td style={{ padding: '1rem 0.5rem', verticalAlign: 'top' }}><code style={{ color: '#e67e22', fontWeight: 600, fontSize: '0.9rem' }}>msisdn</code></td>
+                                    <td style={{ padding: '1rem 0.5rem', verticalAlign: 'top' }}><code style={{ color: '#8e44ad', fontSize: '0.85rem' }}>STRING</code></td>
+                                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>3</td>
+                                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>YES</td>
+                                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.5 }}>Phone number of the end-user. This will always be provided by WIGAL and must be returned as it is, in the response string.</td>
+                                </tr>
+                                <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                                    <td style={{ padding: '1rem 0.5rem', verticalAlign: 'top' }}><code style={{ color: '#e67e22', fontWeight: 600, fontSize: '0.9rem' }}>userdata</code></td>
+                                    <td style={{ padding: '1rem 0.5rem', verticalAlign: 'top' }}><code style={{ color: '#8e44ad', fontSize: '0.85rem' }}>STRING</code></td>
+                                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>5</td>
+                                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>YES</td>
+                                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.5 }}>Data from the end-user or Data from Content Providers. This must be provided by the Content Provider.</td>
+                                </tr>
+                                <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                                    <td style={{ padding: '1rem 0.5rem', verticalAlign: 'top' }}><code style={{ color: '#e67e22', fontWeight: 600, fontSize: '0.9rem' }}>username</code></td>
+                                    <td style={{ padding: '1rem 0.5rem', verticalAlign: 'top' }}><code style={{ color: '#8e44ad', fontSize: '0.85rem' }}>STRING</code></td>
+                                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>6</td>
+                                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>YES</td>
+                                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.5 }}>Your username registered with WIGAL. This will always be provided by WIGAL and must be returned as it is, in the response string.</td>
+                                </tr>
+                                <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                                    <td style={{ padding: '1rem 0.5rem', verticalAlign: 'top' }}><code style={{ color: '#e67e22', fontWeight: 600, fontSize: '0.9rem' }}>trafficid</code></td>
+                                    <td style={{ padding: '1rem 0.5rem', verticalAlign: 'top' }}><code style={{ color: '#8e44ad', fontSize: '0.85rem' }}>STRING</code></td>
+                                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>7</td>
+                                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>YES</td>
+                                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.5 }}>Uniquely identifies every traffic even if from the same session. This will always be provided by WIGAL and must be returned as it is, in the response string.</td>
+                                </tr>
+                                <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                                    <td style={{ padding: '1rem 0.5rem', verticalAlign: 'top' }}><code style={{ color: '#e67e22', fontWeight: 600, fontSize: '0.9rem' }}>other</code></td>
+                                    <td style={{ padding: '1rem 0.5rem', verticalAlign: 'top' }}><code style={{ color: '#8e44ad', fontSize: '0.85rem' }}>STRING</code></td>
+                                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>8</td>
+                                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>NO</td>
+                                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.5 }}>Optional reference data by Third-Party. Parameter will be returned in the next request same as provided by third-party.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <TipBox theme={theme}>
+                        <strong>NB:</strong> START always begins the session of the USSD.
+                    </TipBox>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: 1.6, marginTop: '1.5rem' }}>
+                        The below is a sample callback URL provided by a content provider (Developer): <span style={{ color: 'var(--brand-green)', fontWeight: 600 }}>https://192.168.10.12/ussdservice.php</span>
+                    </p>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: 1.6, marginTop: '1rem' }}>
+                        Wigal USSD API expects response from content provider as JSON. The fields expected are detailed below followed by an example JSON in the required format: The &quot;\n&quot; and &quot;^&quot; Character is used as a newline indicator.
+                    </p>
+                    <div style={{
+                        background: theme === 'dark' ? '#0a0a0a' : '#ffffff',
+                        borderRadius: '16px',
+                        border: `1px solid ${theme === 'dark' ? 'var(--border-color)' : '#e2e8f0'}`,
+                        overflow: 'hidden',
+                        marginTop: '1rem'
+                    }}>
+                        <SyntaxHighlighter
+                            language="json"
+                            style={vscDarkPlus}
+                            customStyle={{
+                                margin: 0,
+                                padding: '1.5rem',
+                                background: theme === 'dark' ? '#0a0a0a' : '#ffffff',
+                                fontSize: '0.9rem',
+                                lineHeight: 1.6
+                            }}
+                        >
+{`{
+  "network": "MTN",
+  "sessionid": "169264399917825",
+  "mode": "START",
+  "phonenumber": "233276128036",
+  "userdata": "800*8989",
+  "username": "smartussdv2",
+  "trafficid": "90",
+  "other": ""
+}`}
+                        </SyntaxHighlighter>
+                    </div>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: 1.6, marginTop: '2rem' }}>
+                        Below is a sample PHP script:
+                    </p>
+                    <CodeBlockWithCopy
+                        label="ussdservice.php"
+                        language="php"
+                        theme={theme}
+                        code={`$data = @file_get_contents('php://input');
+$dataobj = json_decode($data);
+// Check if data is not empty and is an object
+if (!empty($data) && is_object($dataobj)) {
+    // Check if mode is "start"
+    if (strtolower($dataobj->mode) == 'start') {
+        $dataobj->mode = "more";
+        $dataobj->userdata = "Welcome to Version2^ Choose your option:^1.Input^2.Message^3.End";
+    } else {
+        // Process the userdata for options
+        if ($dataobj->userdata == '1') {
+            $dataobj->userdata = "You choose input.";
+        }
+        if ($dataobj->userdata == '2') {
+            $dataobj->userdata = "You choose Message.";
+        }
+        if ($dataobj->userdata == '3') {
+            $dataobj->userdata = "You choose End.";
+        }
+        $dataobj->mode = "end";
+    }
+}
+echo json_encode($dataobj);`}
+                    />
+                    <h2 style={{ fontSize: '1.75rem', marginBottom: '1rem', marginTop: '3rem', color: 'var(--text-primary)', fontWeight: 700 }}>Sample Response</h2>
+                    <CodeBlockWithCopy
+                        label="ussdservice.php"
+                        language="php"
+                        theme={theme}
+                        code={`$data = @file_get_contents('php://input');
+$dataobj = json_decode($data);
+// Check if data is not empty and is an object
+if (!empty($data) && is_object($dataobj)) {
+    // Check if mode is "MORE"
+    if (strtolower($dataobj->mode) == 'more') {
+        $dataobj->mode = "more";
+        $dataobj->userdata = "Welcome to Version2\\n Choose your option:\\n1.Input^2.Message^3.End";
+    } else {
+        // Process the userdata for options
+        if ($dataobj->userdata == '1') {
+            $dataobj->userdata = "You choose input.";
+        }
+        if ($dataobj->userdata == '2') {
+            $dataobj->userdata = "You choose Message.";
+        }
+        if ($dataobj->userdata == '3') {
+            $dataobj->userdata = "You choose End.";
+        }
+        $dataobj->mode = "end";
+    }
+}
+echo json_encode($dataobj);`}
+                    />
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: 1.6, marginTop: '1.5rem' }}>
+                        The above sample response will achieve the menu displayed as below:
+                    </p>
+                    <div style={{
+                        background: theme === 'dark' ? '#111' : '#f8fafc',
+                        border: `1px solid ${theme === 'dark' ? 'var(--border-color)' : '#e2e8f0'}`,
+                        borderRadius: '12px',
+                        padding: '1rem 1.25rem',
+                        marginTop: '1rem',
+                        fontFamily: "'JetBrains Mono', monospace",
+                        fontSize: '0.9rem',
+                        color: 'var(--text-secondary)',
+                        lineHeight: 1.8,
+                        whiteSpace: 'pre-wrap'
+                    }}>
+                        {`Welcome to Version2
+Choose your option:
+1.Input
+2.Message
+3.End`}
+                    </div>
+                    <TipBox theme={theme}>
+                        <strong>NB:</strong> Max characters per page must be 160 including spaces. If exceeded, the message will be truncated. Avoid special characters like $ ` &lt; &apos; &amp; in the USERDATA field to prevent display issues with USSD menus.
+                    </TipBox>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: 1.6, marginTop: '1.5rem' }}>
+                        WIGAL SMART USSD API receives the response and parses the request, and depending on that particular network setups, it generates an appropriate network response in protocols such as SMPP, SOAP, SS7, etc. and sends it to the respective network operator.
+                    </p>
+                    <h3 style={{ fontSize: '1.3rem', marginBottom: '0.5rem', marginTop: '2rem', color: 'var(--text-primary)', fontWeight: 600 }}>Developers Example in PHP</h3>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: 1.6, marginTop: '0.5rem' }}>
+                        Get a complete sample PHP script with its Database structure on our Github page here: <a href="https://github.com/wigalgh/smartussd_api_v2" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--brand-green)', textDecoration: 'none', fontWeight: 600 }}>Github Repository</a>
+                    </p>
+                </>
+            )
+        },
         'Voice Verify OTP': {
             title: 'Voice OTP Verification',
             body: (
@@ -3500,7 +4103,7 @@ curl_close($ch);
                                         className="search-result-item"
                                         onClick={() => handleSearchResultClick(result)}
                                     >
-                                        <div className="result-name">{result.name}</div>
+                                        <div className="result-name">{result.displayName ?? result.name}</div>
                                         <div className="result-path">{result.tab} › {result.group}</div>
                                     </div>
                                 ))}
@@ -3540,7 +4143,7 @@ curl_close($ch);
                                 setActiveTab(tab);
                                 const firstItem = sidebarGroups[tab]?.[0]?.items?.[0];
                                 if (firstItem) {
-                                    setActiveSidebarItem(typeof firstItem === 'object' ? firstItem.name : firstItem);
+                                    setActiveSidebarItem(typeof firstItem === 'object' ? firstItem.key : firstItem);
                                 }
                             }}
                         >
@@ -3560,11 +4163,12 @@ curl_close($ch);
                             {group.items.map((item, i) => {
                                 const isObject = typeof item === 'object';
                                 const name = isObject ? item.name : item;
+                                const key = isObject ? item.key : item;
                                 return (
                                     <div
                                         key={i}
-                                        className={`sidebar-nav-item ${activeSidebarItem === name ? 'active' : ''}`}
-                                        onClick={() => setActiveSidebarItem(name)}
+                                        className={`sidebar-nav-item ${activeSidebarItem === key ? 'active' : ''}`}
+                                        onClick={() => setActiveSidebarItem(key)}
                                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
                                     >
                                         {name}
