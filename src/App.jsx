@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Moon, Sun, ChevronRight, Copy, Check, Lightbulb } from 'lucide-react';
+import { Search, Moon, Sun, ChevronRight, Copy, Check, Lightbulb, Menu } from 'lucide-react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
@@ -396,6 +396,7 @@ function App() {
     const [theme, setTheme] = useState('dark');
     const [searchQuery, setSearchQuery] = useState('');
     const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const [sidebarOpen, setSidebarOpen] = useState(false);
     const searchRef = useRef(null);
 
     const topTabs = ['Introduction', 'Account Balance', 'Bulk Messaging', 'Smart USSD'];
@@ -4068,6 +4069,9 @@ curl_close($ch);
         <div className="app-root bg-[var(--bg-primary)]" data-theme={theme}>
             <nav className="top-nav">
                 <div className="top-row">
+                    <button type="button" className="mobile-menu-btn" onClick={() => setSidebarOpen(true)} aria-label="Open menu">
+                        <Menu size={22} />
+                    </button>
                     <div className="logo-section" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                         <img
                             src={theme === 'dark' ? "/images/logo-white.png" : "/images/logo-main.png"}
@@ -4155,7 +4159,8 @@ curl_close($ch);
                 <div className="divider-line-full"></div>
             </nav>
 
-            <div className="layout-container">
+            <div className={`layout-container ${sidebarOpen ? 'sidebar-open' : ''}`}>
+                <div className={`sidebar-overlay ${sidebarOpen ? 'visible' : ''}`} onClick={() => setSidebarOpen(false)} aria-hidden="true" />
                 <aside className="sidebar">
                     {sidebarContent.map((group, idx) => (
                         <div key={idx} className="nav-group">
@@ -4168,7 +4173,10 @@ curl_close($ch);
                                     <div
                                         key={i}
                                         className={`sidebar-nav-item ${activeSidebarItem === key ? 'active' : ''}`}
-                                        onClick={() => setActiveSidebarItem(key)}
+                                        onClick={() => {
+                                            setActiveSidebarItem(key);
+                                            setSidebarOpen(false);
+                                        }}
                                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
                                     >
                                         {name}
